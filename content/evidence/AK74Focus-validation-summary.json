@@ -1,0 +1,50 @@
+{
+  "schema": "WardogsAK74CompletionV1",
+  "success": true,
+  "createdAtUtc": "2026-09-24T00:40:24.4882090Z",
+  "engine": "UE5.8",
+  "scope": "AK74 source-pose composition, observed camera single/auto fit, source core audio bank; no full 1:1 claim",
+  "build": "Succeeded",
+  "rulesPassed": 29,
+  "gameplayChecks": 539,
+  "gameplayFailures": 0,
+  "gameplayCaptures": 82,
+  "ak74Frames": 648,
+  "ak74Cases": 6,
+  "ak74IndependentChecks": 18852,
+  "mainManifest": "Saved/RuntimeBurst/44D84FE24D42FD94FB579C8A5E1DF80F/manifest.json",
+  "transitionManifest": "Saved/RuntimeBurst/FBEB036041B581ED8B252F8EB776FE89/manifest.json",
+  "audioRecorded": false,
+  "hashes": [
+    {
+      "path": "Config/AK74RecoilFit.json",
+      "sha256": "2545AFC152B40C7D09D23A9AB009587DB555B6F1C226E36CBEC02E1C6FB8EF6F",
+      "bytes": 9242
+    },
+    {
+      "path": "Config/AK74Audio.json",
+      "sha256": "2916628B7D3E395FD5409B20FA06280F36893C346AEEF5456D2549C614D53740",
+      "bytes": 7770
+    },
+    {
+      "path": "Saved/AK74Focus/runtime-gameplay.json",
+      "sha256": "551D69A0AAA055248236F932F286F2B90B5963D622BD8CC6397048925CD657BA",
+      "bytes": 52841
+    },
+    {
+      "path": "Saved/AK74Focus/automation-index.json",
+      "sha256": "A8821C24EE56298B2A213ADC1DB8C62413706F6764B35A01084E5BD9BFA634B3",
+      "bytes": 12113
+    },
+    {
+      "path": "Saved/AK74Focus/runtime-validation.json",
+      "sha256": "062F3740157D422DCB7E4748FBCA7D5E4E3B71A7DD4E4315322D67D46AF98CE8",
+      "bytes": 202618
+    },
+    {
+      "path": "Binaries/Win64/UnrealEditor-WardogsGameplayLab.dll",
+      "sha256": "EFE0E4BDE1C5129CA812947A346B2532E18614107A8E61D2FE4EED8615DA34F1",
+      "bytes": 2270720
+    }
+  ]
+}

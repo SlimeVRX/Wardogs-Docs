@@ -1,0 +1,121 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="description" content="Báo cáo hiệu chỉnh AK74, nền tảng Gun Gameplay và quy trình tái tạo cảm giác bắn từng khẩu."><title>Vì sao cảm giác bắn chưa giống và những gì đã sửa · Wardogs Docs</title><link rel="stylesheet" href="../assets/styles.css"></head><body><header class="masthead"><div class="brand">WARDOGS DOCS<span>Cẩm nang Gun Gameplay · tiếng Việt · 24.09.2026</span></div><div class="actions"><a href="../index.html">Cẩm nang</a><a href="../references.html">Báo cáo & bằng chứng</a><a href="https://github.com/SlimeVRX/Wardogs-Docs">GitHub ↗</a><button class="print" onclick="window.print()">In / lưu PDF</button></div></header><main class="report-layout"><article class="chapter"><p class="report-date">BÁO CÁO LỊCH SỬ · <a href="../references.html">Về danh mục</a> · <a href="../content/reports/Gunplay-Changes-20260923.vi.md">Markdown</a></p><aside class="notice">Báo cáo này giữ trạng thái tại thời điểm ghi. Các nhận xét về asset, sound, ADS và thông số có thể đã được sửa ở bước sau. Đọc <a href="../index.html#case-study">lịch sử AK74</a> và <a href="../index.html#start">kết quả hiện tại</a> trước khi sử dụng số liệu.</aside><h1 id="gunplay-changes-20260923-vi-md-title">Vì sao cảm giác bắn chưa giống và những gì đã sửa</h1>
+<p>Bản cũ có model, clip, reload và logic bắn của từng khẩu, nhưng cách ghép chúng làm mất đặc tính của nguồn. Lượt này kiểm toán cơ chế trước, đo các đoạn video sau, rồi mới sửa runtime. Kết quả là bản cải tiến của <strong>10 khẩu đang chơi được</strong>, chưa phải khôi phục hoàn chỉnh cả 33 khẩu hoặc chứng nhận giống từng frame.</p>
+<p>Mở <a href="../references.html#local-e6dfa4fb33ab">Gunfeel-Comparison.html (workspace)</a> để xem frame nguồn, thời gian lấy mẫu và capture Unreal. Chạy <code>Play-Showcase.cmd</code> để chơi bản đã sửa; cấu hình Showcase dùng nhịp và thời gian chuyển ADS ước lượng riêng cho video <code>bxMd6SvtJi8</code>.</p>
+<h2 id="gunplay-changes-20260923-vi-md-sai-lech-da-xac-dinh">Sai lệch đã xác định</h2>
+<ol>
+<li><strong>Bỏ mất chuyển động ADS gốc.</strong> Cả 10 <code>ADS_In</code> đều là animation chuyển tư thế, nhưng trước đây runtime giữ frame cuối rồi nội suy pose. Ví dụ AK74 có đoạn vượt nhẹ trước khi ổn định; Deagle có quỹ đạo xoay giữa clip khác hẳn hướng ở frame cuối. Nay runtime đi qua các key của own <code>ADS_In</code>, không nhân thêm một lớp alpha làm yếu chuyển động đó. Frame đầu khớp own idle trong 0,0051 cm ở xương kiểm tra. Chuyển súng xóa progress cũ; nhả/nhấn ADS giữa chừng giữ progress liên tục.</li>
+<li><strong>Làm yếu cú giật đầu của source Fire.</strong> Lớp action cũ có alpha 0,4 → 0,8 → 1 ở ba frame đầu tại 60 Hz. Trong video, pistol đã nâng mạnh trong 1–2 frame sau flash. Nay own Fire/AimFire nhận đúng trọng số ngay khi bắt đầu; clip gốc vẫn quyết định diễn biến chuyển động. Không tăng play rate để ép khớp một điểm ảnh.</li>
+<li><strong>Hết ADS Fire lại trộn hip idle.</strong> Clip action bị đổi sang hip idle khi alpha vẫn còn khoảng 0,77, gây một cú hụt rồi quay lại ngắm. Nay lớp fade giữ sample cuối của source action trước khi trả về lớp ADS. Khi bị ngắt, nó giữ đúng sample tại điểm ngắt; đổi súng xóa cache.</li>
+<li><strong>Hai lớp chuyển động lệch một frame.</strong> Fire phát từ tick weapon có source pose ngay nhưng procedural kick còn đợi actor tick tiếp theo. Nay kick được cập nhật trong cùng presentation tick, không chạy lại decay, bob hoặc ADS lần thứ hai và không xóa offset optic.</li>
+<li><strong>KH2002 đổi mode nhưng không đổi tốc độ.</strong> Nay SEMI dùng 518 RPM và BURST dùng 711 RPM theo bảng beta đã cung cấp. Đây là sửa áp dụng đúng bảng, không phải kết luận video showcase dùng đúng hai con số này.</li>
+<li><strong>Recoil return sai ở giới hạn nhìn lên.</strong> Nếu camera chỉ còn dịch được 0,1° trước trần pitch, hệ thống nay chỉ ghi 0,1° để hồi lại; không ghi toàn bộ impulse rồi kéo camera thấp hơn điểm xuất phát.</li>
+<li><strong>Proxy nhận dữ liệu animation của frame trước.</strong> UE gọi <code>Proxy::PreUpdate</code> trước <code>NativeUpdateAnimation</code>; việc chép ActionTime/AimTime trong PreUpdate khiến pose evaluate trễ dù telemetry clock đã mới. Nay graph nhận dữ liệu sau NativeUpdate, dùng explicit sequence evaluation cho các track được seek. Kiểm tra mới so transform <code>weapon_r</code> đã evaluate với transform của đúng source sample, không chỉ so biến thời gian.</li>
+<li><strong>World zoom khi dùng iron chưa đúng tỷ lệ.</strong> So hai vùng background độc lập cho thấy tỷ lệ phóng đại khoảng 1,27 ở pistol, 1,29 ở Vector, khoảng 1,30 ở phần lớn rifle; cấu hình cũ 94°→83,6° chỉ khoảng 1,20. Preset Showcase nay áp dụng tỷ lệ theo từng khẩu vào HipFOV của lab; không coi đó là FOV tuyệt đối gốc. Nhánh optic SKS 2× giữ riêng. Showcase mặc định chọn iron phù hợp các đoạn video này.</li>
+</ol>
+<h2 id="gunplay-changes-20260923-vi-md-dac-tinh-tung-khau-va-du-lieu-dung-trong-ban-nay">Đặc tính từng khẩu và dữ liệu dùng trong bản này</h2>
+<p>Các thời gian ADS bên dưới là fit theo <strong>chuyển động nhìn thấy</strong>, có sai số quan sát khoảng ±5 frame tổng hợp. Chúng không cho biết độ trễ từ lúc người chơi bấm chuột. Mỗi khẩu vẫn dùng chính quỹ đạo animation của mình.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Khẩu</th>
+<th>Vai trò/chế độ đang có</th>
+<th align="right">RPM Showcase</th>
+<th align="right">ADS vào, giây</th>
+<th>Điểm cần phân biệt</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AK74</td>
+<td>Assault, Semi/Auto, 30 viên</td>
+<td align="right">~650, đo audio</td>
+<td align="right">0,267</td>
+<td>Quỹ đạo ADS có đoạn vượt nhẹ; own hip/ADS Fire và cơ khí riêng.</td>
+</tr>
+<tr>
+<td>Vector / SUPER45</td>
+<td>SMG, Semi/Auto, 30 viên</td>
+<td align="right">~1200, đo audio</td>
+<td align="right">0,316</td>
+<td>Chu kỳ 50 ms, chỉ khoảng ba frame ở 60 Hz; giữ nhịp và sample theo tuổi shot.</td>
+</tr>
+<tr>
+<td>M249</td>
+<td>LMG, Semi/Auto, 200 viên</td>
+<td align="right">~850, đo audio</td>
+<td align="right">0,683</td>
+<td>Đưa súng lên ngắm chậm rõ rệt hơn pistol/Vector; own belt-fed rig và reload.</td>
+</tr>
+<tr>
+<td>SKS</td>
+<td>Marksman, Semi, 10 viên</td>
+<td align="right">416, bảng beta</td>
+<td align="right">0,500</td>
+<td>Bắn từng phát, reload riêng; Inspect arms/mechanics có độ dài khác nhau và giữ clock riêng.</td>
+</tr>
+<tr>
+<td>M1911</td>
+<td>Pistol, Semi, 7 viên</td>
+<td align="right">470, bảng beta</td>
+<td align="right">0,200</td>
+<td>Hip Fire xoay mạnh hơn GGX17; slide dùng <code>stockRelease_J</code>, không phải chỉ tìm <code>bolt_J</code>.</td>
+</tr>
+<tr>
+<td>M4</td>
+<td>Assault, Semi/Auto, 30 viên</td>
+<td align="right">827, bảng beta</td>
+<td align="right">0,417</td>
+<td>Own FP/mechanical Fire. 800 RPM từ audio còn là ứng viên nên chưa thay bằng số đó.</td>
+</tr>
+<tr>
+<td>GGX17</td>
+<td>Pistol, Semi, 17 viên</td>
+<td align="right">524, bảng beta</td>
+<td align="right">0,233</td>
+<td>Clip Fire 30 Hz, ngắn 0,833 s; không lấy số frame của Deagle để chỉnh nó.</td>
+</tr>
+<tr>
+<td>Deagle</td>
+<td>Pistol, Semi, 7 viên</td>
+<td align="right">277, bảng beta</td>
+<td align="right">0,233</td>
+<td>Own hip Fire mạnh nhất trong ba pistol đã đo; không còn lớp alpha đầu làm yếu nó.</td>
+</tr>
+<tr>
+<td>MP5</td>
+<td>SMG, Semi/Auto, 30 viên</td>
+<td align="right">~800, hai đoạn audio hip/ADS</td>
+<td align="right">0,466</td>
+<td>Own FP Fire đã có; <strong>chưa có mechanical Fire</strong>, vẫn là own idle fallback.</td>
+</tr>
+<tr>
+<td>KH2002</td>
+<td>Assault, Semi/Burst, 30 viên</td>
+<td align="right">518 / 711, bảng beta</td>
+<td align="right">0,384</td>
+<td>Rate riêng theo mode; số viên/burst và pause vẫn là chính sách study.</td>
+</tr>
+</tbody></table></div>
+<p>Ví dụ từ xương <code>weapon_r</code> của source hip Fire ở khoảng 33 ms: GGX17 xoay 7,92°, M1911 15,50°, Deagle 34,25° so với đầu clip. Đây là chuyển động animation, <strong>không phải</strong> góc recoil camera, độ tản hoặc góc bay của đạn. Source hip và ADS có đường đi khác nhau; không căn chúng thay cho nhau.</p>
+<h2 id="gunplay-changes-20260923-vi-md-nhung-gi-chua-duoc-khoi-phuc-chinh-xac">Những gì chưa được khôi phục chính xác</h2>
+<ul>
+<li>Controller recoil, yaw randomness, hồi tâm, sway và kick procedural vẫn là tuning study; video không có input/mouse telemetry để phân biệt hoàn toàn recoil gốc với thao tác ghìm chuột. Không lấy projected pixels đổi trực tiếp thành recoil degrees.</li>
+<li>ADS ra đang đi ngược own ADS_In với cùng tốc độ đã chọn khi vào; đây là suy luận đối xứng, chưa phải native ADS_Out graph. Tỷ lệ world zoom có phép đo background và khoảng sai số; FOV tuyệt đối, FOV viewmodel và đồ thị zoom gốc vẫn chưa xác minh được.</li>
+<li>Sáu khẩu thêm vẫn có delivery hitscan từ importer, trong khi bốn khẩu đầu dùng projectile; tốc độ đạn, movement spread, sway khi thở và pattern chính xác chưa khôi phục. Không tự gán các giá trị đó rồi ghi là dữ liệu gốc.</li>
+<li>FireSound hiện dùng own Core; chưa tái tạo đầy đủ các layer, tail, mixer/MetaSound và âm học môi trường. Capture trong bộ đối chiếu này không ghi audio; số sound requests đúng không chứng minh âm thanh đúng.</li>
+<li>Muzzle vẫn là hiệu ứng study; chưa phải native particle graph. Skeleton, skinning, animation và mesh đúng không tự động làm shader, camera, VFX, sound hoặc gameplay graph đúng.</li>
+<li>Source archive local và build của video chưa được đối chiếu định danh chính xác. 23 khẩu còn lại chưa được tích hợp thành gameplay trong lượt này.</li>
+</ul>
+<h2 id="gunplay-changes-20260923-vi-md-bang-chung-va-cach-kiem-tra-lai">Bằng chứng và cách kiểm tra lại</h2>
+<p>Build UE 5.8 thành công. Lượt gameplay cuối <code>19264A404A283AB56AED2895B3E1F0B5</code> đạt <strong>539/539 kiểm tra</strong>, tạo <strong>82 ảnh</strong>, xem <a href="../references.html#local-810cc062aa87">receipt (workspace)</a>. Bao gồm bắn, đạn, reload, mode, vendor, sprint, ADS bị ngắt/đảo chiều và đổi súng. Lượt đầu đạt 538/539 vì kiểm tra cũ giả định Vector luôn gắn reflex; kiểm tra được sửa theo optic thực đã chọn, giữ các kiểm tra mesh/socket và iron/reflex loại trừ nhau, rồi chạy lại toàn bộ. <a href="../references.html#local-e77d0f6377eb">Receipt thất bại cũ (workspace)</a> được giữ nguyên để tra cứu.</p>
+<p>Đợt capture cuối có <strong>6 run, 34 tình huống, 2.946 PNG ở 60 Hz</strong>, gồm hip single và chuyển ADS cho đủ 10 khẩu. <a href="../references.html#local-cedc45660cc0">Audit runtime (workspace)</a> đạt toàn bộ kiểm tra clock, cadence, pose và tính toàn vẹn PNG. <strong>2.048 sample</strong> full-weight so trực tiếp transform <code>weapon_r</code> đã evaluate với source tại cùng thời điểm: sai số lớn nhất 0,0000061 cm / 0,0000082°. Phép so này chỉ chứng minh pose xương đã nhập chạy đúng, không chứng minh camera hay pixel giống video.</p>
+<p><a href="../references.html#local-c8ff9e2129eb">26/26 kiểm thử quy tắc (workspace)</a> đạt. Trang <a href="../references.html#local-e6dfa4fb33ab">đối chiếu cuối (workspace)</a> có 8 cặp hip theo mốc flame, 10 cặp chuyển ADS và 3 đối chứng dùng endpoint trong cùng build. MP5/KH2002 chưa có mốc hip flame đủ rõ nên xem nguồn và runtime riêng. <a href="../references.html#local-1994fbfbc10c">Kiểm tra trang đối chiếu (workspace)</a> đã chạy JavaScript, kiểm bước frame và toàn bộ 5.004 đường dẫn PNG; chưa kiểm layout bằng browser. 5.004 PNG gồm ảnh nguồn và 2.946 ảnh runtime, không phải 5.004 frame gameplay mới.</p>
+<p>Quan sát trực tiếp capture cuối: ở 0,2 s, M249 dùng đường ADS nguồn vẫn đang đưa súng lên, khác rõ endpoint control đã gần tư thế ngắm. Deagle ở khoảng 33 ms đã có cú nâng mạnh; ảnh nguồn vẫn khác ở flash, vỏ đạn, ánh sáng, camera và bối cảnh. Không dùng similarity toàn ảnh của hai bối cảnh khác nhau làm điểm số gunfeel.</p>
+<ul>
+<li><a href="../references.html#local-f3ecada382c8">Kiểm toán từng cơ chế trước sửa (workspace)</a>: input, cadence, layers, recoil, spread, audio và các lỗi có bằng chứng.</li>
+<li><a href="Gunplay-WeaponEvidence-20260923.vi.html">Nguồn riêng từng khẩu</a> và <a href="../references.html#local-d1f6b7326a21">JSON (workspace)</a>: path, SHA, clip clocks, additive bases, quỹ đạo ADS và key Fire đầu.</li>
+<li><a href="../references.html#local-de7cff47f5d7">Đo video (workspace)</a>: native PTS, boundary frames, audio periodicity, sai số và vùng chưa xác định.</li>
+<li><code>Config/ShowcaseHandling.json</code>: thời gian ADS vào được chọn, bounds và nguồn frame. <code>Config/ShowcaseCalibration.json</code>: chỉ nhịp đo đủ chắc được thay trong preset video.</li>
+<li><code>Run-GunfeelValidation.ps1</code>: chạy các capture live bằng lệnh; kết quả có timestamp, shot count, clip thực được evaluate, alpha, progress ADS và kick thực/presented. <code>Scripts/audit_gunfeel_runtime.py</code> kiểm các invariant và coverage.</li>
+</ul>
+<p>Kiểm tra chức năng và kiểm tra giống hình ảnh là hai việc riêng. Build/test PASS xác nhận sửa lỗi và đường chạy; trang đối chiếu cho thấy bằng chứng thị giác để đánh giá độ gần nguồn, không tự cấp nhãn “1:1”.</p>
+</article></main></body></html>

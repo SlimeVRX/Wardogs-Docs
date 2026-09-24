@@ -1,0 +1,113 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="description" content="Báo cáo hiệu chỉnh AK74, nền tảng Gun Gameplay và quy trình tái tạo cảm giác bắn từng khẩu."><title>AK74 HIP: đầu nòng và thân súng khi giữ chuột bắn · Wardogs Docs</title><link rel="stylesheet" href="../assets/styles.css"></head><body><header class="masthead"><div class="brand">WARDOGS DOCS<span>Cẩm nang Gun Gameplay · tiếng Việt · 24.09.2026</span></div><div class="actions"><a href="../index.html">Cẩm nang</a><a href="../references.html">Báo cáo & bằng chứng</a><a href="https://github.com/SlimeVRX/Wardogs-Docs">GitHub ↗</a><button class="print" onclick="window.print()">In / lưu PDF</button></div></header><main class="report-layout"><article class="chapter"><p class="report-date">BÁO CÁO LỊCH SỬ · <a href="../references.html">Về danh mục</a> · <a href="../content/reports/AK74-HIP-Measurement-Readme.vi.md">Markdown</a></p><aside class="notice">Báo cáo này giữ trạng thái tại thời điểm ghi. Các nhận xét về asset, sound, ADS và thông số có thể đã được sửa ở bước sau. Đọc <a href="../index.html#case-study">lịch sử AK74</a> và <a href="../index.html#start">kết quả hiện tại</a> trước khi sử dụng số liệu.</aside><h1 id="ak74-hip-measurement-readme-vi-md-title">AK74 HIP: đầu nòng và thân súng khi giữ chuột bắn</h1>
+<p>Phạm vi: chỉ HIP AK74, source YouTube <code>bxMd6SvtJi8</code>, 60 fps. Không thay đổi ADS trong nghiên cứu này. Mốc nguồn là phát bắn nhìn thấy đầu tiên tại <strong>416.200 giây</strong>, sai số một frame. Đây không phải thời điểm người chơi nhấn chuột.</p>
+<h2 id="ak74-hip-measurement-readme-vi-md-phat-hien-chinh">Phát hiện chính</h2>
+<p>Bản <code>44D84FE24D42FD94FB579C8A5E1DF80F</code> đã gần đường đi của hình nền/camera nhưng <strong>chuyển động của chính cây súng vẫn sai</strong>. Hai đại lượng này phải đo riêng.</p>
+<p>Trong chu kỳ đầu, đầu ruồi của bản nguồn đi sang phải khoảng 13 px và lên khoảng 6 px. Bản dựng lại đi sang trái khoảng 12 px ở 33 ms, rồi lên khoảng 20 px ở cuối chu kỳ. Đồng thời, thân súng đi sang phải ở cả hai bản. Đây là dấu hiệu phần xoay/điểm đặt chuyển động hoặc hệ tọa độ của viewmodel sai, không chỉ là độ giật camera thiếu hoặc thừa.</p>
+<p>Khi bắt đầu viên tiếp theo, bản cũ đặt thời gian animation về đầu clip gần như trực tiếp. Bước nhảy một frame đo trên thân súng lên tới <strong>38.72 px</strong>; đầu ruồi tới <strong>21.62 px</strong>. Nguồn tương ứng có bước lớn nhất khoảng <strong>15.35 px</strong> và <strong>7.90 px</strong>. Những bước nhảy này giải thích cảm giác nòng súng lắc và bị kéo giật lại.</p>
+<p>Đơn vị ở đây là pixel quy về 1920×1080; ảnh runtime thực tế là 960×540, số đo được nhân hai. Không dùng ảnh nội suy để giả tăng độ chính xác.</p>
+<h2 id="ak74-hip-measurement-readme-vi-md-phuong-phap-do-va-chat-luong-du-lieu">Phương pháp đo và chất lượng dữ liệu</h2>
+<ul>
+<li><code>validate_hip_viewmodel.py</code>: các điểm ảnh thuộc thân súng, optical flow hai chiều, partial affine RANSAC. Lưu chuyển động, tỷ lệ biểu kiến, số điểm hợp lệ và residual từng frame. Camera/hình nền không tham gia phép đo này.</li>
+<li><code>track_front_template.py</code>: đăng ký lại hình chữ U của đầu ruồi vào từng frame độc lập, dùng normalized cross-correlation và tinh chỉnh đỉnh dưới một pixel. Không tích lũy sai số tracking qua nhiều frame. <strong>Dùng file <code>*-front-template.json</code> làm số liệu chính cho đầu ruồi</strong>.</li>
+<li>Kết quả optical flow đầu ruồi trong <code>*-hip-viewmodel.json</code> chỉ là thử nghiệm phụ: đầu ruồi chỉ rộng khoảng 12 pixel ở runtime; một số chuỗi mất điểm hoặc tỷ lệ ước lượng tăng vô lý sau khoảng 30–50 frame. Không dùng các tỷ lệ đầu ruồi này để kết luận độ sâu vật lý.</li>
+<li>Template nguồn có điểm tương đồng tối thiểu 0.806; runtime khoảng 0.58–0.64 ở các frame nền gạch đi qua vùng đầu ruồi. Đã kiểm tra crop có đánh dấu điểm ở chu kỳ đầu. Vì vậy sai khác 10–20 px có ý nghĩa rõ; chênh lệch dưới khoảng 1 px giữa hai ứng viên chưa đủ để kết luận một bản tốt hơn chắc chắn.</li>
+<li><code>scaleRelativeFirst</code> là tỷ lệ ảnh 2D biểu kiến, gồm cả phối cảnh/foreshortening. Nó không phải số đo cây súng di chuyển bao nhiêu cm theo chiều sâu.</li>
+</ul>
+<h2 id="ak74-hip-measurement-readme-vi-md-thu-nghiem-giam-trong-so-va-noi-hai-lan-ban">Thử nghiệm giảm trọng số và nối hai lần bắn</h2>
+<p>Manifest thử nghiệm: <code>866A8F96454299EA1007FC98B32F51C9</code>, 4 trường hợp, mỗi trường hợp 96 frame: giữ bắn 1 giây rồi thả 0.6 giây. Phần so sánh cùng hành vi chỉ dùng 61 frame từ 0 tới 1 giây. Nguồn tiếp tục bắn sau 1 giây; không so tail sau thả của runtime với nguồn còn giữ bắn.</p>
+<p><code>a</code> là trọng số animation HIP; <code>b</code> là thời gian nối từ tư thế clip cũ sang clip của viên mới. ADS, camera và âm thanh không thuộc phép thử này.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Bản</th>
+<th align="right">RMSE đầu ruồi XY</th>
+<th align="right">RMSE thân súng XY</th>
+<th align="right">Bước đầu ruồi lớn nhất</th>
+<th align="right">Bước thân súng lớn nhất</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Cũ, a=1, không nối</td>
+<td align="right">14.93</td>
+<td align="right">15.95</td>
+<td align="right">21.62</td>
+<td align="right">38.72</td>
+</tr>
+<tr>
+<td>a=.45, b=0</td>
+<td align="right">10.61</td>
+<td align="right">10.10</td>
+<td align="right">9.15</td>
+<td align="right">13.50</td>
+</tr>
+<tr>
+<td>a=.45, b=.04 s</td>
+<td align="right">9.47</td>
+<td align="right">7.29</td>
+<td align="right">5.56</td>
+<td align="right">6.16</td>
+</tr>
+<tr>
+<td>a=.45, b=.06 s</td>
+<td align="right">8.98</td>
+<td align="right">7.06</td>
+<td align="right">4.10</td>
+<td align="right">6.10</td>
+</tr>
+<tr>
+<td>a=.55, b=.04 s</td>
+<td align="right">9.87</td>
+<td align="right">6.62</td>
+<td align="right">6.71</td>
+<td align="right">7.91</td>
+</tr>
+</tbody></table></div>
+<p>Không dịch thời gian để chọn sai số đẹp nhất. JSON có thêm độ nhạy với lệch nguồn -1/0/+1 frame.</p>
+<p>Kết luận tạm thời: giảm trọng số và nối clip đã giảm giật cục rõ rệt. Nhưng <strong>không ứng viên nào khôi phục hướng đi của đầu ruồi</strong>: nguồn X khoảng [-3.99,+14.27], còn a=.45 vẫn khoảng [-5.68,+2.34]. Chỉ chỉnh trọng số không thể sửa phép biến đổi sai hướng. Cần kiểm tra cách áp dụng CameraBone, hệ tọa độ viewmodel và thứ tự phối hợp pose; không tiếp tục giảm độ giật camera để che lỗi này.</p>
+<h2 id="ak74-hip-measurement-readme-vi-md-tai-chay">Tái chạy</h2>
+<pre><code class="language-powershell">python validate_hip_viewmodel.py PATH_TO_MANIFEST --case CASE_ID --label UNIQUE_LABEL
+python track_front_template.py PATH_TO_MANIFEST --case CASE_ID --label UNIQUE_LABEL
+</code></pre>
+<p>Hai script chỉ đọc ảnh, ghi số liệu và contact sheet; không mở Unreal và không sửa gameplay. Các contact sheet <code>*-front-template-review.jpg</code> đặt dấu đỏ tại điểm đo đầu ruồi. <code>*-front-rear-0.jpg</code> và <code>*-front-rear-24.jpg</code> cho phép kiểm tra trực tiếp hình dáng, kích thước và mối quan hệ giữa nòng/thân súng.</p>
+<p>Đây là nghiên cứu đối chiếu một clip cụ thể. Chưa biết input chuột gốc, FOV chính xác, phiên bản game trong video và đầy đủ AnimGraph gốc. Không gọi các con số này là bằng chứng đã khôi phục nguyên bản toàn hệ thống.</p>
+<h2 id="ak74-hip-measurement-readme-vi-md-ket-qua-ban-production-duoc-chup-rieng">Kết quả bản production được chụp riêng</h2>
+<p>Manifest <strong>05C648EC48FE6B757AA51DBA378ACAD1</strong>, cấu hình HIP <code>amplitude=.45</code>, <code>retriggerBlend=.06 s</code>, <code>rotationScale=1</code>. Chỉ đo chuỗi <code>ak74-hip-auto</code>, 61 frame 0–1 s. Các số dưới đây được tính lại trên PNG của bản production, không dùng số của bản thử nghiệm thay thế.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Đại lượng, đơn vị px quy về1080p</th>
+<th align="right">Bản cũ</th>
+<th align="right">Production</th>
+<th align="right">Video nguồn</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RMSE đường đi đầu ruồi XY</td>
+<td align="right">14.93</td>
+<td align="right">8.98</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td>RMSE đường đi thân súng XY</td>
+<td align="right">15.95</td>
+<td align="right">6.99</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td>Bước đầu ruồi lớn nhất giữa2 frame</td>
+<td align="right">21.62</td>
+<td align="right">4.09</td>
+<td align="right">7.90</td>
+</tr>
+<tr>
+<td>Bước thân súng lớn nhất giữa2 frame</td>
+<td align="right">38.72</td>
+<td align="right">6.16</td>
+<td align="right">15.35</td>
+</tr>
+</tbody></table></div>
+<p><strong>Bước nhỏ hơn nguồn không có nghĩa là giống nguồn hơn.</strong> Bản mới đã giảm giật cục rõ, nhưng chuyển động ngang của đầu ruồi còn thiếu. Nguồn có trung bình X khoảng+9.02 px trong đoạn0.2–1 s; bản lab mới vẫn chỉ khoảng+0.4 px. Đó là sai khác còn lại có thể nhìn thấy, không được che bằng kết luận đã rep1:1.</p>
+<p>Thử nghiệm độc lập giảm góc xoay quanh <code>weapon_r</code> với các tỷ lệ0/.25/.5 không cải thiện đồng thời hai mốc. Tỷ lệ.5 chỉ cải thiện RMSE đầu ruồi khoảng0.42 px nhưng làm RMSE thân súng tăng khoảng2 px; mức cải thiện đầu ruồi nhỏ hơn độ bất định quan sát. Vì vậy production giữ <strong>rotationScale=1</strong>, tức nhánh hiệu chỉnh xoay không tác động. Receipt thử nghiệm ở <code>B65AA8704498B59EF90F2399D328708F</code> vẫn được giữ để chứng minh giả thuyết đã được thử và loại bỏ.</p>
+<p>Kiểm tra độc lập các frame0 và29–45, gồm các frame điểm tương đồng template thấp nhất, xác nhận marker vẫn nằm trên đầu ruồi vật lý. Sai số quan sát thủ công khoảng1 pixel gốc theoX và1–2 pixel theoY; dùng biên thận trọng ±2 pixel gốc mỗi trục (±4 px quy đổi), rộng hơn ở frame mờ. Đây là đánh giá QA thị giác, không phải confidence interval thống kê.</p>
+<p>Trang <a href="../references.html#local-cd2c97b9a0e6">AK74 HIP Frame Comparison (workspace)</a> mặc định cho xem0–60 frame, có ảnh toàn cảnh và crop đầu ruồi/thân súng lấy từ PNG gốc. Có thể bật thêm0.5 s sau thả cò; nguồn được để trống ở đoạn này vì không có input tương đương. <a href="AK74-HIP-Changes-20260924.vi.html">Giải thích lỗi và cách sửa</a> mô tả cơ chế gameplay; <code>final-summary.json</code> và hai file <code>final-*-*.json</code> lưu phép đo chi tiết.</p>
+</article></main></body></html>

@@ -1,0 +1,41 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="description" content="Báo cáo hiệu chỉnh AK74, nền tảng Gun Gameplay và quy trình tái tạo cảm giác bắn từng khẩu."><title>AK74 HIP: dữ liệu gốc và phần hiệu chỉnh nghiên cứu · Wardogs Docs</title><link rel="stylesheet" href="../assets/styles.css"></head><body><header class="masthead"><div class="brand">WARDOGS DOCS<span>Cẩm nang Gun Gameplay · tiếng Việt · 24.09.2026</span></div><div class="actions"><a href="../index.html">Cẩm nang</a><a href="../references.html">Báo cáo & bằng chứng</a><a href="https://github.com/SlimeVRX/Wardogs-Docs">GitHub ↗</a><button class="print" onclick="window.print()">In / lưu PDF</button></div></header><main class="report-layout"><article class="chapter"><p class="report-date">BÁO CÁO LỊCH SỬ · <a href="../references.html">Về danh mục</a> · <a href="../content/reports/AK74-HIP-Mechanisms-20260924.vi.md">Markdown</a></p><aside class="notice">Báo cáo này giữ trạng thái tại thời điểm ghi. Các nhận xét về asset, sound, ADS và thông số có thể đã được sửa ở bước sau. Đọc <a href="../index.html#case-study">lịch sử AK74</a> và <a href="../index.html#start">kết quả hiện tại</a> trước khi sử dụng số liệu.</aside><h1 id="ak74-hip-mechanisms-20260924-vi-md-title">AK74 HIP: dữ liệu gốc và phần hiệu chỉnh nghiên cứu</h1>
+<p>Phạm vi: chuyển động tay/súng khi bắn HIP, đặc biệt giữ cò ở 650 RPM. Tài liệu này phân biệt dữ liệu đã đọc được với cách dựng lại để đối chiếu video; không chứng nhận đã khôi phục graph gốc hay giống từng frame.</p>
+<h2 id="ak74-hip-mechanisms-20260924-vi-md-nguon-da-xac-nhan">Nguồn đã xác nhận</h2>
+<p>Montage <code>/WEPN_001/Animation/Character/Montages/FP/AM_FP_AK74M_Fire.AM_FP_AK74M_Fire</code> tham chiếu:</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Slot</th>
+<th>Sequence</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>BasicAction, Crouch, Prone</td>
+<td><code>A_FP_AK74M_Fire</code></td>
+</tr>
+<tr>
+<td>ADS, CrouchADS, ProneADS</td>
+<td><code>A_FP_AK74M_Standing_ADS_Fire</code></td>
+</tr>
+</tbody></table></div>
+<p>Mỗi segment dài 1 giây, rate 1; montage ghi blend-in 0 giây và blend-out 0,4 giây. Metadata còn có <code>IdleOffsetBlend</code>, <code>AdditiveOff</code>, notify bắt đầu bắn tại 0,0001 giây và kết thúc tại 0,134 giây. Chưa giải mã được nơi graph/code game sử dụng các curve và notify này. Không được mặc định <code>AdditiveOff</code> là weight recoil hoặc blend-out 0,4 giây nghĩa là mọi phát bắn chồng pose trong 0,4 giây.</p>
+<p>Chứng cứ: <code>WardogsPorting/Demos/GunGameplay/Files/metadata_5da6b19a468a_7a8d34fd2429.json</code>, SHA-256 <code>7a8d34fd24297f70e7e946e63ebff4cd49f61aa6dbc0a6f270344a2d67ffc7c4</code>. Clip HIP full pose dùng trong lab có SHA-256 <code>acee85a674682234caf884932c03b8bcaf9958a62e677ef0419338348272cf46</code>; exporter đã bake additive lên own Idle(0) bằng reference thay thế được khai báo rõ. Authored base bị loại trong cooked data vẫn chưa khôi phục.</p>
+<h2 id="ak74-hip-mechanisms-20260924-vi-md-vi-sao-giu-co-tao-chuyen-dong-giat-cuc">Vì sao giữ cò tạo chuyển động giật cục</h2>
+<p>Đường cũ reset một evaluator Fire về tuổi của phát mới mỗi 92,3077 ms. Nó không cộng nhiều đuôi animation. <code>weapon_r</code> của một phát HIP lùi khoảng 4,26 cm tại 66,7 ms, còn lùi 3,79 cm khi đến phát tiếp theo, và chỉ trở lại gần idle khoảng 150–200 ms. Cắt về frame đầu xóa ngay phần pose đang giữ.</p>
+<p>Capture baseline <code>44D84FE24D42FD94FB579C8A5E1DF80F</code> cho thấy 10 lần retrigger trong chuỗi HIP nhảy 1,99–3,74 cm và khoảng 2,10° giữa hai frame. Đây là đo transform xương thật; không phải khoảng cách pixel hay toàn bộ chuyển động camera.</p>
+<h2 id="ak74-hip-mechanisms-20260924-vi-md-hieu-chinh-duoc-chon-trong-lab">Hiệu chỉnh được chọn trong lab</h2>
+<p>Ba điều khiển dưới đây là <strong>calibration nghiên cứu</strong>, không phải thông số vừa giải mã từ WARDOGS:</p>
+<ol>
+<li><code>sourceAmplitude</code>: giảm delta local của clip nguồn, giữ reference Idle và locomotion/ADS base hiện tại.</li>
+<li><code>retriggerBlendSeconds</code>: khi bắn tiếp, lấy pose cũ tại deadline phát mới rồi chuyển ngắn sang clock clip mới bằng smoothstep. Phát đầu không dùng lịch sử; đây là handoff do lab thêm, không phải blend-in gốc.</li>
+<li><code>rotationScale</code>: phép thử giảm phần xoay component của <code>weapon_r</code> so với pose nền bằng hiệu chỉnh rigid quanh chính pivot của nó. <strong>Phép thử này không được chọn làm mặc định</strong>; giá trị chạy cuối bằng 1, giữ nguyên pose đầu vào.</li>
+</ol>
+<p><code>FAnimNode_WardogsHipBaseCache</code> lấy nền trong lượt evaluate thực của locomotion/aim. Node hiệu chỉnh đọc cache sau đó, không evaluate hay tick SequencePlayer thêm lần nữa. Cache được vô hiệu hóa trước mỗi lần đọc để tránh lấy pose nền của frame trước. Curves và attributes đi qua nguyên trạng. Ghi chú review: node rotation chỉ có một <code>InputPose</code>; không còn nhánh <code>BasePose</code> thứ hai trỏ vào cùng Aiming/Movement, nên không tạo thêm một lượt cập nhật locomotion.</p>
+<p>Lựa chọn cuối trong <code>Config/AK74HipFire.json</code> là <strong>sourceAmplitude = 0,45; retriggerBlendSeconds = 0,06; rotationScale = 1</strong>. Capture A/B amplitude/handoff <code>866A8F96454299EA1007FC98B32F51C9</code> hỗ trợ việc giảm bước nhảy của chuỗi bắn. Capture rotation <code>B65AA8704498B59EF90F2399D328708F</code> có 384 frame cho bốn ứng viên: các thử nghiệm giảm rotation làm sai số phần thân/rear tăng; mức cải thiện tốt nhất của front chỉ khoảng 0,42 pixel, nhỏ hơn độ bất định định vị kiểm tra thủ công: khoảng ±2 pixel native runtime mỗi trục, tức ±4 pixel quy về 1080p. Vì vậy không dùng rotation correction để đổi một sai lệch rõ thành một cải thiện chưa đủ chắc chắn.</p>
+<p>Node rotation vẫn giữ lại cho đối chứng có chủ ý qua override trong <code>AK74HipRotationCandidates.json</code>; ở cấu hình mặc định, scale 1 là pass-through chính xác. Kết quả so với video còn sai hướng chuyển động đầu ruồi ở một số thời điểm, nên lựa chọn này là giảm lỗi đã đo được, không phải kết luận đã tái tạo 1:1.</p>
+<h2 id="ak74-hip-mechanisms-20260924-vi-md-gioi-han-va-diem-phai-kiem-tra">Giới hạn và điểm phải kiểm tra</h2>
+<p>Không đổi controller recoil, đường đạn hoặc clock animation cơ khí trong hiệu chỉnh này. Chính sách được chọn là <strong>theo clip của từng phát bắn</strong>: shot bắt đầu ở ADS dùng clip ADS riêng và các hệ số HIP ở trạng thái pass-through; shot bắt đầu HIP rồi mới nhấn RMB tiếp tục giữ hiệu chỉnh HIP đến phát tiếp theo hoặc khi clip kết thúc. Nền aim vẫn chuyển theo input. Như vậy chuyển động recoil của một shot không bị nhân thêm một hệ số biến đổi chỉ vì người chơi đang vào/ra ADS. “Giữ nguyên ADS” ở đây nghĩa là giữ nguyên shot đã bắt đầu ở ADS, không có nghĩa mọi frame có AimBlend &gt; 0 đều tắt hiệu chỉnh HIP.</p>
+<p><code>Config/AK74HipTransitions.json</code> dành riêng cho các tình huống nhấn aim trễ 0,05 giây sau một shot và chuyển mode sau 0,25 giây khi giữ cò theo cả hai chiều. Cần dùng receipt chạy của các case này để xác minh; case <code>aimOnTrigger</code> đơn lẻ không bao phủ chúng.</p>
+<p>Giả thuyết bù bằng inverse CameraBone đã được tính độc lập: tại 33,3 ms CameraBone không tịnh tiến, xoay 0,788°; góc <code>weapon_r</code> tăng từ 2,839° lên 3,602° khi đưa về basis camera đang animate. Với basis mesh hiện tại, hướng bù còn đẩy sight sang trái/lên, không giải thích được sai lệch quan sát. Vì vậy không thêm camera shake hoặc inverse-camera compensation như một cách sửa mặc định.</p>
+<p>Nghiệm thu cần cả telemetry và hình ảnh: pose thật khớp phép dựng lại, pivot/quan hệ grip giữ đúng, không tăng tốc locomotion, không giữ history sau đổi action/profile, delayed HIP→ADS hoạt động, và muzzle/rear sight/front sight gần track video hơn. Việc C++ build hoặc oracle xương qua chỉ chứng minh triển khai nhất quán; chúng không tự chứng minh cảm giác bắn hay pixel giống game gốc.</p>
+</article></main></body></html>

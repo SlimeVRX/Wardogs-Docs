@@ -1,0 +1,411 @@
+{
+  "schema": "WardogsDocsPublicationV1",
+  "date": "2026-09-24",
+  "entries": [
+    {
+      "kind": "chapter",
+      "source": "WardogsAssetLab/Docs/Gunplay-Handbook/00-Readme.vi.md",
+      "file": "content/handbook/00-Readme.vi.md",
+      "route": "index.html#start",
+      "id": "start",
+      "title": "Bắt đầu",
+      "description": "Cách đọc và kết quả hiện tại",
+      "sourceSha256": "8e8e4815dfd50f844d87a00133be6de7ae1a54e23a389b69bfe33385c2384c41",
+      "publishedSha256": "d69a2b22b976781ff0f12ec8950458ac2eca9916ddf93c3d7629c0fe550e3564"
+    },
+    {
+      "kind": "chapter",
+      "source": "WardogsAssetLab/Docs/Gunplay-Handbook/01-AK74-Case-Study.vi.md",
+      "file": "content/handbook/01-AK74-Case-Study.vi.md",
+      "route": "index.html#case-study",
+      "id": "case-study",
+      "title": "Lịch sử AK74",
+      "description": "Nguyên nhân → sửa → kiểm chứng",
+      "sourceSha256": "d130437cb31c4a846f983f76a005dbe065b7bc782710e358245a9d85d4e62882",
+      "publishedSha256": "c5451896695049defecbc3602e479dfce3cda169df5ded38e4d2a3ddd1461533"
+    },
+    {
+      "kind": "chapter",
+      "source": "WardogsAssetLab/Docs/Gunplay-Handbook/02-Gunplay-Foundations.vi.md",
+      "file": "content/handbook/02-Gunplay-Foundations.vi.md",
+      "route": "index.html#foundations",
+      "id": "foundations",
+      "title": "Nền tảng Gun Gameplay",
+      "description": "22 chủ đề, từ input tới mục tiêu",
+      "sourceSha256": "63ceeffa39ef286ba40c0b45f4ec8116199176bd027fe68da130a76142c9e659",
+      "publishedSha256": "b62f742aee8703d3873793f2a4aa1bb057944224b4d3fb203ede7afefe6e2bac"
+    },
+    {
+      "kind": "chapter",
+      "source": "WardogsAssetLab/Docs/Gunplay-Handbook/03-Weapon-Reconstruction-Workflow.vi.md",
+      "file": "content/handbook/03-Weapon-Reconstruction-Workflow.vi.md",
+      "route": "index.html#workflow",
+      "id": "workflow",
+      "title": "Quy trình cho khẩu tiếp theo",
+      "description": "11 bước và các cổng nghiệm thu",
+      "sourceSha256": "31486e2c12aa73f1844e39466a9510d69ae08f8269a95a8c09d25c2eca71ae9b",
+      "publishedSha256": "dc13ebd7d3971d3e0f8ee872080a3ba5c98e54bf106b7c7a45be112e9ad778e5"
+    },
+    {
+      "kind": "chapter",
+      "source": "WardogsAssetLab/Docs/Gunplay-Handbook/04-Weapon-Worksheet.template.vi.md",
+      "file": "content/handbook/04-Weapon-Worksheet.template.vi.md",
+      "route": "index.html#worksheet",
+      "id": "worksheet",
+      "title": "Phiếu công việc",
+      "description": "Sao chép để bắt đầu điều tra",
+      "sourceSha256": "48d13e76f8f85e6002f72643e09337c894e4646755907b41513fa975205f6e84",
+      "publishedSha256": "48d13e76f8f85e6002f72643e09337c894e4646755907b41513fa975205f6e84"
+    },
+    {
+      "kind": "report",
+      "source": "WardogsAssetLab/Docs/GunGameplay-Integration-Audit.vi.md",
+      "file": "content/reports/GunGameplay-Integration-Audit.vi.md",
+      "route": "reports/GunGameplay-Integration-Audit.vi.html",
+      "sourceSha256": "548e3dbe29a600e0dc57a15e5eed7cc35516812c116eb59ae6000f928187d9dc",
+      "title": "Kiểm tra tích hợp GunGameplay — 20/09/2026",
+      "publishedSha256": "12de91019f569f8677f56c67384893e838f88c51c9534c8ac22de59b14a65e68"
+    },
+    {
+      "kind": "report",
+      "source": "WardogsAssetLab/Docs/VideoGunplay-CodeAudit.vi.md",
+      "file": "content/reports/VideoGunplay-CodeAudit.vi.md",
+      "route": "reports/VideoGunplay-CodeAudit.vi.html",
+      "sourceSha256": "f7b9f07f520b7342fa0dcfb88cf82d1cda5ea5d645b7aa8033e5d286653544a2",
+      "title": "Kiểm toán nền GunStudy trước khi tái tạo gameplay trong video VrtwXz94dQg",
+      "publishedSha256": "f7b9f07f520b7342fa0dcfb88cf82d1cda5ea5d645b7aa8033e5d286653544a2"
+    },
+    {
+      "kind": "report",
+      "source": "WardogsAssetLab/Docs/Showcase-Implementation.vi.md",
+      "file": "content/reports/Showcase-Implementation.vi.md",
+      "route": "reports/Showcase-Implementation.vi.html",
+      "sourceSha256": "b7a894d7bd5b16f3831cfa0367c35f74cf1f4a486021b37947c74c5b00c3e3d6",
+      "title": "Gunplay theo video bxMd6SvtJi8",
+      "publishedSha256": "67d279bb2467312d67149224b74d012dfb5fd404d8880d64f7e5e2bb846e1db5"
+    },
+    {
+      "kind": "report",
+      "source": "WardogsAssetLab/Docs/Gunplay-Changes-20260923.vi.md",
+      "file": "content/reports/Gunplay-Changes-20260923.vi.md",
+      "route": "reports/Gunplay-Changes-20260923.vi.html",
+      "sourceSha256": "dad8ff9c60ca790cc4e7c52a68237450d1e0f7f5be3bb4803817b207834af554",
+      "title": "Vì sao cảm giác bắn chưa giống và những gì đã sửa",
+      "publishedSha256": "c1f1081de350533651db42bc76c8666f5f1df8d2789874f734de5a991ec155e6"
+    },
+    {
+      "kind": "report",
+      "source": "WardogsAssetLab/Docs/AK74-MechanismAudit-20260924.vi.md",
+      "file": "content/reports/AK74-MechanismAudit-20260924.vi.md",
+      "route": "reports/AK74-MechanismAudit-20260924.vi.html",
+      "sourceSha256": "b800888ffea8e4011b8eb4ffaa417d689d3ea072ef35ad1ea0a864e32524894e",
+      "title": "AK74: vì sao đúng clip vẫn cho cảm giác bắn sai",
+      "publishedSha256": "e72e01dd4338b8c10431551331d124df4bbd3a9bcdb3e35cde74b3d79fbf1f3f"
+    },
+    {
+      "kind": "report",
+      "source": "WardogsAssetLab/Docs/AK74-VideoAnalysis-20260924.vi.md",
+      "file": "content/reports/AK74-VideoAnalysis-20260924.vi.md",
+      "route": "reports/AK74-VideoAnalysis-20260924.vi.html",
+      "sourceSha256": "20870e9a3261cca737b9c320e789466146b4e2fc86a0ba828288b85129829ea1",
+      "title": "AK74: lỗi cảm giác bắn và phép đo từng frame",
+      "publishedSha256": "0c5c3eb9037d82e9a5c83906212080470c73505134f2996999ded4e862943c8c"
+    },
+    {
+      "kind": "report",
+      "source": "WardogsAssetLab/Docs/AK74-AudioAudit-20260924.vi.md",
+      "file": "content/reports/AK74-AudioAudit-20260924.vi.md",
+      "route": "reports/AK74-AudioAudit-20260924.vi.html",
+      "sourceSha256": "429e2acba9bb7594fa6f91939a869db4e18b92510163aec1e6feab9c27704ee7",
+      "title": "AK74: âm thanh đang làm cảm giác bắn khác video ở đâu?",
+      "publishedSha256": "1f83703abc1b6534ef68f310544b863e7e0b90b3136307044a3108716f341630"
+    },
+    {
+      "kind": "report",
+      "source": "WardogsAssetLab/Docs/AK74-HIP-Mechanisms-20260924.vi.md",
+      "file": "content/reports/AK74-HIP-Mechanisms-20260924.vi.md",
+      "route": "reports/AK74-HIP-Mechanisms-20260924.vi.html",
+      "sourceSha256": "f97ea2e3c45fd7a9e9bb7445cec58388e6f499894fcb168615471135a7f934a3",
+      "title": "AK74 HIP: dữ liệu gốc và phần hiệu chỉnh nghiên cứu",
+      "publishedSha256": "2d03173ccccd94022ad77a1c9815e83a26efe93e7ca03a8419776f9dea7e713c"
+    },
+    {
+      "kind": "report",
+      "source": "WardogsAssetLab/Docs/Gunplay-WeaponEvidence-20260923.vi.md",
+      "file": "content/reports/Gunplay-WeaponEvidence-20260923.vi.md",
+      "route": "reports/Gunplay-WeaponEvidence-20260923.vi.html",
+      "sourceSha256": "98748bf3cf1742fc5d1f71bb2b864c8f4efbf690775bae7ebf17c317c4ab310f",
+      "title": "Bằng chứng cơ chế súng — 23/09/2026",
+      "publishedSha256": "ebff50e8e742eeda525200b21dd0b867ba99d93790b026f2b5001315fb08d208"
+    },
+    {
+      "kind": "report",
+      "source": "WardogsAssetLab/Docs/AK74-HIP-Changes-20260924.vi.md",
+      "file": "content/reports/AK74-HIP-Changes-20260924.vi.md",
+      "route": "reports/AK74-HIP-Changes-20260924.vi.html",
+      "sourceSha256": "f2e338199f7249be64511367f95edfd61293f2462282a2160d37e29c35ee71dd",
+      "title": "AK74: sửa rung đầu súng khi giữ cò HIP",
+      "publishedSha256": "b656dfda662db631ebf93d3540dd95275b6c960af67479b3c3ebfbb11fd95f51"
+    },
+    {
+      "kind": "report",
+      "source": "WardogsPorting/research/gameplay/bxMd6SvtJi8/ak74-hip-focus-20260924/README.vi.md",
+      "file": "content/reports/AK74-HIP-Measurement-Readme.vi.md",
+      "route": "reports/AK74-HIP-Measurement-Readme.vi.html",
+      "sourceSha256": "639189d00b923edef9cd39cb9a924e87aec5a4ce92948def3f2b89447723a876",
+      "title": "AK74 HIP: đầu nòng và thân súng khi giữ chuột bắn",
+      "publishedSha256": "66236a389f0121a308988155fb75afdaa38a3f7483268b37c74fc415faa7a982"
+    },
+    {
+      "kind": "evidence",
+      "source": "WardogsAssetLab/Config/AK74HipFire.json",
+      "file": "content/evidence/AK74HipFire.json",
+      "route": "content/evidence/AK74HipFire.json",
+      "title": "AK74HipFire.json",
+      "sourceSha256": "0a99e1a2f0bddc9808537cb45a904e43ea174c0a484773af8ec9151d3e11fadd",
+      "publishedSha256": "70c62e3364d8d59a01e7baf2aa77ce6cedf147a4c6b5075e5ab93f7df6171ce3"
+    },
+    {
+      "kind": "evidence",
+      "source": "WardogsAssetLab/Saved/AK74Focus/validation-summary.json",
+      "file": "content/evidence/AK74Focus-validation-summary.json",
+      "route": "content/evidence/AK74Focus-validation-summary.json",
+      "title": "AK74Focus-validation-summary.json",
+      "sourceSha256": "f8147938c1f0dcb5d4d75179672a40651968d0ee4128730b1e38f9dd79dde782",
+      "publishedSha256": "355fe8b54403d9ae671b944307a9f18f27e994c8cb9a967b594185fe29393117"
+    },
+    {
+      "kind": "evidence",
+      "source": "WardogsAssetLab/Saved/AK74HipFocus/validation-summary.json",
+      "file": "content/evidence/AK74HipFocus-validation-summary.json",
+      "route": "content/evidence/AK74HipFocus-validation-summary.json",
+      "title": "AK74HipFocus-validation-summary.json",
+      "sourceSha256": "c5192e72305d06f3b9db21215b3565fb9cb23f92f801354d4b7a53126a55e44d",
+      "publishedSha256": "c43522a3d71920aae44d12a710856b674921d45625362135c0ba72fecc0327fb"
+    },
+    {
+      "kind": "evidence",
+      "source": "WardogsAssetLab/Saved/AK74EditorLevel/level-validation.json",
+      "file": "content/evidence/AK74EditorLevel-validation.json",
+      "route": "content/evidence/AK74EditorLevel-validation.json",
+      "title": "AK74EditorLevel-validation.json",
+      "sourceSha256": "04b251c088e837f284c59b264536f9df1539f42fed9f535d59c186efa298bff6",
+      "publishedSha256": "1e67dd16c97c7476c9706d54841ed9062be96fe55158f546b84aa9c14f4b4f13"
+    }
+  ],
+  "localReferences": [
+    {
+      "id": "local-c7f49feebdca",
+      "path": "WardogsAssetLab/Config/AK74RecoilFit.json"
+    },
+    {
+      "id": "local-0108dc7f6100",
+      "path": "WardogsAssetLab/Config/GunplayReference.json"
+    },
+    {
+      "id": "local-81accccd2544",
+      "path": "WardogsAssetLab/Config/ShowcaseReloadAudio.json"
+    },
+    {
+      "id": "local-e3d92080dd81",
+      "path": "WardogsAssetLab/Docs/AK74-FrameComparison.html"
+    },
+    {
+      "id": "local-cd2c97b9a0e6",
+      "path": "WardogsAssetLab/Docs/AK74-HIP-FrameComparison.html"
+    },
+    {
+      "id": "local-74ed97c7845f",
+      "path": "WardogsAssetLab/Docs/AK74-MechanismAudit-20260924.json"
+    },
+    {
+      "id": "local-e6dfa4fb33ab",
+      "path": "WardogsAssetLab/Docs/Gunfeel-Comparison.html"
+    },
+    {
+      "id": "local-f3ecada382c8",
+      "path": "WardogsAssetLab/Docs/Gunplay-MechanismAudit-20260923.vi.md"
+    },
+    {
+      "id": "local-de7cff47f5d7",
+      "path": "WardogsAssetLab/Docs/Gunplay-VideoMeasurements-20260923.vi.md"
+    },
+    {
+      "id": "local-d1f6b7326a21",
+      "path": "WardogsAssetLab/Docs/Gunplay-WeaponEvidence-20260923.json"
+    },
+    {
+      "id": "local-7a04718d58c2",
+      "path": "WardogsAssetLab/Docs/Showcase-AssetCoverage.json"
+    },
+    {
+      "id": "local-724267aa20dc",
+      "path": "WardogsAssetLab/Docs/Showcase-AssetCoverage.vi.md"
+    },
+    {
+      "id": "local-fe8cc5d22e16",
+      "path": "WardogsAssetLab/Docs/Showcase-Comparison.html"
+    },
+    {
+      "id": "local-30b9352badd4",
+      "path": "WardogsAssetLab/Docs/Showcase-Expansion.vi.md"
+    },
+    {
+      "id": "local-e149619010c2",
+      "path": "WardogsAssetLab/Docs/Showcase-Locomotion.vi.md"
+    },
+    {
+      "id": "local-32c26b228b33",
+      "path": "WardogsAssetLab/Docs/Showcase-M4Variant.vi.md"
+    },
+    {
+      "id": "local-d07a5afced61",
+      "path": "WardogsAssetLab/Docs/Showcase-NotifyAudit.vi.md"
+    },
+    {
+      "id": "local-3e49edf8c1d1",
+      "path": "WardogsAssetLab/Docs/Showcase-PistolMaterialAudit.vi.md"
+    },
+    {
+      "id": "local-adc1448c4dc2",
+      "path": "WardogsAssetLab/Docs/Showcase-RuntimeClips/C643CBEB4FB9E2BA016592B601ED9791/manifest.json"
+    },
+    {
+      "id": "local-4fa76850798f",
+      "path": "WardogsAssetLab/Docs/Showcase-TimingNotes.vi.md"
+    },
+    {
+      "id": "local-9ddadbab9d4b",
+      "path": "WardogsAssetLab/Docs/SourceCamera-Diagnostic.vi.md"
+    },
+    {
+      "id": "local-d4583e0315c6",
+      "path": "WardogsAssetLab/Open-AK74HIP-Editor.cmd"
+    },
+    {
+      "id": "local-f9879bb2b54a",
+      "path": "WardogsAssetLab/Play-Showcase.cmd"
+    },
+    {
+      "id": "local-de21cf1b6ec0",
+      "path": "WardogsAssetLab/Saved/AK74HipFocus/runtime-validation.json"
+    },
+    {
+      "id": "local-cedc45660cc0",
+      "path": "WardogsAssetLab/Saved/GunfeelValidation/audit.json"
+    },
+    {
+      "id": "local-1994fbfbc10c",
+      "path": "WardogsAssetLab/Saved/GunfeelValidation/comparator-final-checks.json"
+    },
+    {
+      "id": "local-7f02cfd765ab",
+      "path": "WardogsAssetLab/Saved/Showcase/automation21-source-camera.json"
+    },
+    {
+      "id": "local-c8ff9e2129eb",
+      "path": "WardogsAssetLab/Saved/Showcase/automation26-gunfeel-20260923.json"
+    },
+    {
+      "id": "local-0b50e73ffef3",
+      "path": "WardogsAssetLab/Saved/Showcase/expansion-preparation.json"
+    },
+    {
+      "id": "local-810cc062aa87",
+      "path": "WardogsAssetLab/Saved/Showcase/runtime-gunfeel-19264A404A283AB56AED2895B3E1F0B5.json"
+    },
+    {
+      "id": "local-e77d0f6377eb",
+      "path": "WardogsAssetLab/Saved/Showcase/runtime-gunfeel-obsolete-assert-A1D8CBF3422A2BE6D92003A9A485F0EA.json"
+    },
+    {
+      "id": "local-24db29627f85",
+      "path": "WardogsAssetLab/Saved/Showcase/runtime-ten-pbr-113C4B814DC8B1B5BD3ED7970E58409A.json"
+    },
+    {
+      "id": "local-2e29063967e3",
+      "path": "WardogsAssetLab/Saved/ShowcaseCapture/DF484E1044625FF06AE6CDBC55E8A86C/manifest.json"
+    },
+    {
+      "id": "local-03223c992e97",
+      "path": "WardogsAssetLab/Saved/VideoGameplay/reference-preparation.json"
+    },
+    {
+      "id": "local-e07dd4f62d5f",
+      "path": "WardogsAssetLab/Saved/VideoGameplay/showcase-preparation.json"
+    },
+    {
+      "id": "local-c2f87e19a796",
+      "path": "WardogsAssetLab/Scripts/import_ak74_audio_bank.py"
+    },
+    {
+      "id": "local-c585f58cf135",
+      "path": "WardogsAssetLab/Scripts/prepare_ea_gameplay.py"
+    },
+    {
+      "id": "local-b688c121414f",
+      "path": "WardogsAssetLab/Scripts/prepare_showcase_weapons.py"
+    },
+    {
+      "id": "local-13c1e4295394",
+      "path": "WardogsAssetLab/Scripts/prepare_video_sks.py"
+    },
+    {
+      "id": "local-47f823871c25",
+      "path": "WardogsAssetLab/Source/WardogsGameplayLab/Private/WardogsGunStudyAnimInstance.cpp"
+    },
+    {
+      "id": "local-b257b772a77e",
+      "path": "WardogsAssetLab/Source/WardogsGameplayLab/Private/WardogsShowcaseCalibration.cpp"
+    },
+    {
+      "id": "local-0e8d18a5a3cf",
+      "path": "WardogsAssetLab/Source/WardogsGameplayLab/Private/WardogsVideoGameplay.cpp"
+    },
+    {
+      "id": "local-49332a347497",
+      "path": "WardogsAssetLab/Source/WardogsGameplayLab/Private/WardogsVideoWidget.cpp"
+    },
+    {
+      "id": "local-3e41113eb56a",
+      "path": "WardogsAssetLab/Source/WardogsGameplayLab/Private/WardogsWeaponComponent.cpp"
+    },
+    {
+      "id": "local-c6fcf28bfce9",
+      "path": "WardogsAssetLab/Source/WardogsGameplayLab/Public/WardogsWeaponProfile.h"
+    },
+    {
+      "id": "local-ac8fcb7074bd",
+      "path": "WardogsPorting/research/gameplay/bxMd6SvtJi8/ak74-focus-20260924/audio-audit/core-only-fit-preview.wav"
+    },
+    {
+      "id": "local-b19a6401c3d6",
+      "path": "WardogsPorting/research/gameplay/bxMd6SvtJi8/ak74-focus-20260924/audio-audit/core-punch-fit-preview.wav"
+    },
+    {
+      "id": "local-05ffeebc9e25",
+      "path": "WardogsPorting/research/gameplay/bxMd6SvtJi8/ak74-focus-20260924/audio-audit/exports/output/inspect-paths-decoded.json"
+    },
+    {
+      "id": "local-5beb9ed54782",
+      "path": "WardogsPorting/research/gameplay/bxMd6SvtJi8/ak74-focus-20260924/audio-audit/exports/output/manifest-export.json"
+    },
+    {
+      "id": "local-3452e06a36df",
+      "path": "WardogsPorting/research/gameplay/bxMd6SvtJi8/ak74-focus-20260924/audio-audit/layer-fit.json"
+    },
+    {
+      "id": "local-11d8e761c290",
+      "path": "WardogsPorting/research/gameplay/bxMd6SvtJi8/ak74-focus-20260924/audio-audit/reference-hip-single-preview.wav"
+    },
+    {
+      "id": "local-5f16864498d9",
+      "path": "WardogsPorting/research/gameplay/bxMd6SvtJi8/ak74-focus-20260924/audio-audit/template-matches.json"
+    },
+    {
+      "id": "local-e089920a6502",
+      "path": "WardogsPorting/research/gameplay/bxMd6SvtJi8/ak74-focus-20260924/audio-audit/waveform-audit.json"
+    }
+  ],
+  "scope": "Authored documentation, selected calibration config and historical validation summaries. No game packages or media."
+}

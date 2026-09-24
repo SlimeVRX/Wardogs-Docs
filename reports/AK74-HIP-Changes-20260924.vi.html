@@ -1,0 +1,124 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="description" content="Báo cáo hiệu chỉnh AK74, nền tảng Gun Gameplay và quy trình tái tạo cảm giác bắn từng khẩu."><title>AK74: sửa rung đầu súng khi giữ cò HIP · Wardogs Docs</title><link rel="stylesheet" href="../assets/styles.css"></head><body><header class="masthead"><div class="brand">WARDOGS DOCS<span>Cẩm nang Gun Gameplay · tiếng Việt · 24.09.2026</span></div><div class="actions"><a href="../index.html">Cẩm nang</a><a href="../references.html">Báo cáo & bằng chứng</a><a href="https://github.com/SlimeVRX/Wardogs-Docs">GitHub ↗</a><button class="print" onclick="window.print()">In / lưu PDF</button></div></header><main class="report-layout"><article class="chapter"><p class="report-date">BÁO CÁO LỊCH SỬ · <a href="../references.html">Về danh mục</a> · <a href="../content/reports/AK74-HIP-Changes-20260924.vi.md">Markdown</a></p><aside class="notice">Báo cáo này giữ trạng thái tại thời điểm ghi. Các nhận xét về asset, sound, ADS và thông số có thể đã được sửa ở bước sau. Đọc <a href="../index.html#case-study">lịch sử AK74</a> và <a href="../index.html#start">kết quả hiện tại</a> trước khi sử dụng số liệu.</aside><h1 id="ak74-hip-changes-20260924-vi-md-title">AK74: sửa rung đầu súng khi giữ cò HIP</h1>
+<p>Lần này tập trung vào cảm giác <strong>bắn không ngắm khi giữ chuột trái</strong>. Bản cũ có hai vấn đề đo được: chuyển động súng quá lớn, và mỗi phát mới cắt chuyển động đang hồi về để quay lại đầu clip. Người chơi thấy đầu súng văng qua lại mặc dù nhịp bắn và đường giật camera đã khá gần video.</p>
+<p>Chạy <a href="../references.html#local-f9879bb2b54a">Play-Showcase.cmd (workspace)</a>, chọn AK74 và nhấn Enter. Giữ chuột trái ở HIP, sau đó giữ chuột phải để thử ADS. <a href="../references.html#local-cd2c97b9a0e6">Trang đối chiếu HIP (workspace)</a> cho xem nguồn, bản trước và bản sau cùng frame, có bước từng frame và phát chậm.</p>
+<h2 id="ak74-hip-changes-20260924-vi-md-da-sua-gi">Đã sửa gì</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Thay đổi chạy thật</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Biên độ animation HIP</td>
+<td>Dùng 45% delta recoil của clip so với idle. Không thu nhỏ mesh hoặc thay vị trí súng lúc đứng yên.</td>
+</tr>
+<tr>
+<td>Nối các phát liên thanh</td>
+<td>Giữ pose của phát cũ tại đúng thời điểm phát mới, rồi chuyển sang pose mới trong 60 ms. Không reset ngay sang đầu clip mỗi phát.</td>
+</tr>
+<tr>
+<td>Phát đầu tiên</td>
+<td>Dùng ngay clip bắn với biên độ mới; không lấy pose cũ hoặc đợi hết thời gian blend.</td>
+</tr>
+<tr>
+<td>Nhịp và cơ khí</td>
+<td>Vẫn 650 RPM / 92,31 ms mỗi phát; bắn đạn, trừ đạn, bolt, flash và request sound theo lịch cũ.</td>
+</tr>
+<tr>
+<td>Bắn bắt đầu ở ADS</td>
+<td>Giữ nhánh animation ADS đã sửa ở lần trước.</td>
+</tr>
+<tr>
+<td>HIP rồi đưa lên ngắm</td>
+<td>Clip đã bắt đầu ở HIP giữ calibration của nó trên nền đang chuyển vào ADS; phát tiếp theo chọn clip theo tư thế lúc bắn.</td>
+</tr>
+</tbody></table></div>
+<p>Thông số ở <a href="../content/evidence/AK74HipFire.json">AK74HipFire.json</a>. Chúng là kết quả hiệu chỉnh bản dựng từ hình ảnh và chuyển động đo được, <strong>không phải thông số AnimGraph gốc vừa được khôi phục</strong>. Tài nguyên cooked chưa cung cấp đầy đủ graph, IK, authored additive base và logic phối hợp của game.</p>
+<h2 id="ak74-hip-changes-20260924-vi-md-do-tung-frame-nhu-the-nao">Đo từng frame như thế nào</h2>
+<p>Nguồn là <a href="https://www.youtube.com/watch?v=bxMd6SvtJi8" target="_blank" rel="noopener noreferrer">All Weapons Showcase</a>, đoạn AK74 HIP liên thanh, mốc phát đầu nhìn thấy <strong>416,200 giây</strong>. Nguồn giữ 1920×1080/60fps. Lab chạy gameplay thật ở bước thời gian 1/60 giây và ghi PNG 960×540 cùng telemetry. Đo tọa độ trên ảnh native; chỉ nhân số đo lab lên hai để so sánh theo pixel 1080p.</p>
+<p>Ba đối tượng được phân biệt:</p>
+<ol>
+<li><strong>Cảnh nền:</strong> cho biết camera đang quay. Lần sửa HIP này không đổi đường giật camera.</li>
+<li><strong>Thân súng gần thước ngắm sau:</strong> cho biết độ lùi, phóng to và dịch chuyển của viewmodel.</li>
+<li><strong>Đầu ruồi phía trước:</strong> cho biết phần người chơi thấy rung ở đầu nòng. Dùng so khớp hình dạng riêng từng frame để tránh lỗi bám điểm tích lũy.</li>
+</ol>
+<p>Mỗi đoạn lấy vị trí ở frame phát đầu làm mốc; không kéo dịch thời gian để làm số đẹp hơn. Sai lệch một frame của thời điểm phát đầu được báo riêng. So sánh 61 frame / giây đầu, lúc cả nguồn và lab đều giữ cò. Không dùng phần đuôi sau khi lab nhả cò để suy rằng input của hai bên giống nhau. Đây là đo quỹ đạo tương đối, không phải chứng minh vị trí tuyệt đối, shader hoặc toàn bộ ảnh trùng nhau.</p>
+<p>Số liệu, bảng ứng viên và giới hạn phép đo ở <a href="AK74-HIP-Measurement-Readme.vi.html">hồ sơ HIP</a>. <a href="AK74-HIP-Mechanisms-20260924.vi.html">Ghi chú source</a> ghi rõ điều nào lấy từ montage và điều nào do lab thêm.</p>
+<p>Kết quả bản cuối <code>05C648EC48FE6B757AA51DBA378ACAD1</code>, trong 61 frame đầu; đơn vị pixel quy về 1080p:</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Phép đo</th>
+<th align="right">Video nguồn</th>
+<th align="right">Trước sửa</th>
+<th align="right">Sau sửa</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Sai lệch quỹ đạo đầu ruồi so với nguồn, RMS XY</td>
+<td align="right">—</td>
+<td align="right">14,93</td>
+<td align="right">8,98</td>
+</tr>
+<tr>
+<td>Bước nhảy lớn nhất của đầu ruồi giữa hai frame</td>
+<td align="right">7,90</td>
+<td align="right">21,62</td>
+<td align="right">4,09</td>
+</tr>
+<tr>
+<td>Sai lệch quỹ đạo thân súng gần thước ngắm sau, RMS XY</td>
+<td align="right">—</td>
+<td align="right">15,95</td>
+<td align="right">6,99</td>
+</tr>
+</tbody></table></div>
+<p>Như vậy quỹ đạo đầu ruồi gần nguồn hơn khoảng 40% theo phép đo này. Tuy nhiên bản mới dao động ít hơn nguồn và vẫn thiếu chuyển động ngang sang phải; <strong>4,09 nhỏ hơn 7,90 không có nghĩa là chính xác hơn ở mọi frame</strong>. Còn khoảng 9 pixel sai lệch quỹ đạo, nên không gọi là 1:1.</p>
+<h2 id="ak74-hip-changes-20260924-vi-md-vi-sao-co-animation-goc-van-chua-co-cam-giac-ban-goc">Vì sao có animation gốc vẫn chưa có cảm giác bắn gốc?</h2>
+<p>Một clip chỉ mô tả <strong>một lớp chuyển động theo thời gian</strong>. Game còn quyết định nền nào ở phía dưới nó, weight bao nhiêu, khi phát kế tiếp đến thì tiếp tục, cộng hay thay clip, và camera có chuyển động riêng hay không. Chạy đúng asset nhưng ghép sai vẫn cho ra cảm giác khác hẳn.</p>
+<p>Trong clip đang dùng, một phát HIP chưa hồi xong sau 92 ms; đến khoảng 150–200 ms mới về gần idle. Nhưng AK74 đã bắn phát tiếp ở 92 ms. Nếu cứ đặt thời gian clip về đầu, súng đang ở phía sau bị nhảy ra phía trước trong một frame. Đây là <strong>gián đoạn animation</strong>, không phải tăng độ giật vật lý. Nối hai pose xử lý chính gián đoạn này.</p>
+<p>Có thể hiểu cảm giác bắn thành năm phần:</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Phần</th>
+<th>Bạn nhìn hoặc cảm thấy gì?</th>
+<th>Vai trò trong lần sửa</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Nhịp bắn</td>
+<td>Khoảng cách giữa tiếng nổ và từng phát đạn</td>
+<td>Giữ lịch 650 RPM; không chậm súng để giấu rung.</td>
+</tr>
+<tr>
+<td>Camera recoil</td>
+<td>Toàn bộ thế giới/tâm nhìn nâng lên; cần ghìm chuột</td>
+<td>Giữ phần đã đo và sửa trước đó.</td>
+</tr>
+<tr>
+<td>Viewmodel recoil</td>
+<td>Tay và súng giật trong màn hình</td>
+<td>Giảm biên độ HIP, nối các phát thay vì cắt pose.</td>
+</tr>
+<tr>
+<td>Sway và locomotion</td>
+<td>Lắc theo chuột, đi, chạy và chuyển tư thế</td>
+<td>Tiếp tục dùng nền chuyển động hiện có; recoil là lớp ghép.</td>
+</tr>
+<tr>
+<td>Phản hồi</td>
+<td>Flash, khói, vỏ đạn, bolt và tiếng nổ</td>
+<td>Giữ đường kích hoạt hiện tại; chưa chứng minh VFX/audio giống từng frame/sample.</td>
+</tr>
+</tbody></table></div>
+<p>Đầu súng cũng không nên đứng bất động: video nguồn vẫn có cú giật nhỏ có nhịp. Mục tiêu là giữ nhịp ấy, giảm những bước nhảy quá lớn do bản dựng tạo ra.</p>
+<h2 id="ak74-hip-changes-20260924-vi-md-phuong-an-da-thu-nhung-khong-chon">Phương án đã thử nhưng không chọn</h2>
+<p>Thử giảm riêng rotation quanh <code>weapon_r</code> có giúp một số frame đầu ruồi, nhưng làm thân súng lệch nguồn hơn. Khác biệt đầu ruồi quá nhỏ để vượt chắc chắn sai số đo. Vì vậy bản chạy đặt <code>rotationScale=1</code>, tức node này đi qua nguyên pose; nó chỉ còn là khả năng thí nghiệm có giới hạn. Không lấy việc súng ít chuyển động hơn làm bằng chứng tự động rằng nó giống video hơn.</p>
+<h2 id="ak74-hip-changes-20260924-vi-md-pham-vi-ket-luan">Phạm vi kết luận</h2>
+<p>Đã xử lý hai nguyên nhân rõ của HIP liên thanh: độ văng quá lớn và nhảy pose khi retrigger. <strong>Chưa đạt sao chép 1:1 từng frame.</strong> Hướng dịch ngang trung bình của đầu ruồi vẫn khác nguồn; graph và input gốc chưa biết. Camera/FOV, đồ họa, VFX và mixer cũng phải được phân biệt khi so hình hoặc đánh giá cảm giác. Không dùng số lượng bài test qua để thay cho bằng chứng hình ảnh.</p>
+<p>Kết quả kiểm tra bản cuối được ghi ở <a href="../content/evidence/AK74HipFocus-validation-summary.json">receipt HIP</a>, <a href="../references.html#local-de21cf1b6ec0">audit runtime (workspace)</a> và trang đối chiếu. Bộ kiểm tra riêng còn so telemetry ADS với bản bạn đã chấp nhận, thay vì chỉ kiểm tra ADS vẫn bắn được.</p>
+<p>Bảy ca đã capture 846 frame: HIP/ADS bắn đơn, HIP/ADS giữ cò, HIP bắn một phát rồi ngắm, giữ cò vào ADS, giữ cò ra HIP. Audit không thấy lỗi pose, lịch bắn hoặc lịch sử pose lẫn giữa các clip. Hai ca bắt đầu bắn ở ADS trùng telemetry bản được chấp nhận trước đó: sai khác lớn nhất của vị trí/quaternion xương súng, góc controller và thời gian clip đều bằng 0 ở các mẫu ghi lại. Đây là kiểm tra chuyển động; không phải lời khẳng định mọi pixel hoặc âm thanh giống nhau.</p>
+<p>Kiểm thêm HIP giữ cò đến hết băng: 180 frame / 3 giây, đúng 30 phát và 0 viên còn lại, không đổi amplitude ở viên cuối hoặc mất handoff giữa các phát. Tổng cộng <strong>8 ca / 1.026 frame</strong>, audit 9.006 điều kiện đạt. Build UE 5.8 thành công; 30/30 bài kiểm tra quy tắc, 539/539 kiểm tra gameplay đang có đạt, kèm 82 ảnh. Phần kiểm tra hết băng là kiểm tra runtime, không mở rộng tuyên bố so khớp video ngoài 61 frame đã đo.</p>
+</article></main></body></html>

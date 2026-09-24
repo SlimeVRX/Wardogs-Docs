@@ -1,0 +1,203 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="description" content="Báo cáo hiệu chỉnh AK74, nền tảng Gun Gameplay và quy trình tái tạo cảm giác bắn từng khẩu."><title>AK74: vì sao đúng clip vẫn cho cảm giác bắn sai · Wardogs Docs</title><link rel="stylesheet" href="../assets/styles.css"></head><body><header class="masthead"><div class="brand">WARDOGS DOCS<span>Cẩm nang Gun Gameplay · tiếng Việt · 24.09.2026</span></div><div class="actions"><a href="../index.html">Cẩm nang</a><a href="../references.html">Báo cáo & bằng chứng</a><a href="https://github.com/SlimeVRX/Wardogs-Docs">GitHub ↗</a><button class="print" onclick="window.print()">In / lưu PDF</button></div></header><main class="report-layout"><article class="chapter"><p class="report-date">BÁO CÁO LỊCH SỬ · <a href="../references.html">Về danh mục</a> · <a href="../content/reports/AK74-MechanismAudit-20260924.vi.md">Markdown</a></p><aside class="notice">Báo cáo này giữ trạng thái tại thời điểm ghi. Các nhận xét về asset, sound, ADS và thông số có thể đã được sửa ở bước sau. Đọc <a href="../index.html#case-study">lịch sử AK74</a> và <a href="../index.html#start">kết quả hiện tại</a> trước khi sử dụng số liệu.</aside><h1 id="ak74-mechanismaudit-20260924-vi-md-title">AK74: vì sao đúng clip vẫn cho cảm giác bắn sai</h1>
+<p>Phạm vi: điều tra source, dữ liệu animation và nguyên nhân kỹ thuật ngày 24/09/2026. Đây là audit trước/sau công thức ghép pose; không phải chứng nhận hình ảnh giống video 1:1. Kiểm tra runtime và so sánh video phải được ghi riêng.</p>
+<h2 id="ak74-mechanismaudit-20260924-vi-md-loi-co-bang-chung-truc-tiep-ban-khi-ngam-doi-ve-tu-the-nen-cua-hip">Lỗi có bằng chứng trực tiếp: bắn khi ngắm đổi về tư thế nền của hip</h2>
+<p>AK74 có hai clip riêng: <code>A_FP_AK74M_Fire</code> và <code>A_FP_AK74M_Standing_ADS_Fire</code>. Chọn đúng tên clip chưa đủ. Cả hai là additive <code>AAT_LocalSpaceBase</code>; authored base <code>LocalAnimFrame</code> đã bị loại trong cooked asset. Exporter trước đây ghi rõ <code>studyOverride</code>: dùng <code>A_FP_AK74M_Idle</code> frame 0 để compose thành full pose.</p>
+<p>Runtime cũ đưa full pose ấy vào nhánh cuối với weight 1. Tư thế ADS bên dưới bị thay thế hoàn toàn. Clip có chữ ADS trong tên vẫn mang <strong>nền hip do quá trình export chọn</strong>, nên hệ thống dựng lại tự làm súng nhảy ngang khi bóp cò, giữ ở vị trí sai, rồi quay về ADS sau khi action kết thúc.</p>
+<p>Đo độc lập từ chuỗi xương local tới component <code>weapon_r</code>:</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Chuyển đổi</th>
+<th align="right">Khoảng cách</th>
+<th align="right">Góc lệch</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Idle → Hip Fire frame 0</td>
+<td align="right">0,00645 cm</td>
+<td align="right">0,0523°</td>
+</tr>
+<tr>
+<td>Idle → AimFire frame 0</td>
+<td align="right">1,75828 cm</td>
+<td align="right">0,1715°</td>
+</tr>
+<tr>
+<td>ADS_In cuối → AimFire frame 0</td>
+<td align="right"><strong>6,13355 cm</strong></td>
+<td align="right"><strong>1,4491°</strong></td>
+</tr>
+<tr>
+<td>ADS_In cuối → AimFire cuối</td>
+<td align="right"><strong>6,87311 cm</strong></td>
+<td align="right"><strong>1,2986°</strong></td>
+</tr>
+</tbody></table></div>
+<p>AimFire cuối gần như chính là hip idle. Toàn bộ 180 xương của Idle giống nhau ở cả ba frame lưu, nên dùng Idle frame 0 làm reference là ổn định. Góc trong bảng là góc xương, không phải recoil camera.</p>
+<h2 id="ak74-mechanismaudit-20260924-vi-md-cach-ghep-dung-trong-ban-nghien-cuu">Cách ghép đúng trong bản nghiên cứu</h2>
+<p>Đối với từng xương local, lấy <code>Action(t)</code> trừ đúng reference được dùng khi bake, rồi áp delta lên tư thế locomotion/ADS hiện tại:</p>
+<pre><code>deltaQ = actionQ * inverse(referenceIdleQ)
+deltaP = actionP - referenceIdleP
+deltaS = actionS / referenceIdleS - 1
+resultQ = deltaQ * currentBaseQ
+resultP = currentBaseP + deltaP
+resultS = currentBaseS * (1 + deltaS)
+</code></pre>
+<p>UE 5.8 có <code>MakeDynamicAdditive</code> và <code>ApplyAdditive</code> thực hiện đúng quy ước này. Cần dùng local additive; trừ component-space <code>weapon_r</code> trực tiếp sẽ không giữ quan hệ tay, cổ tay và súng. Khi recoil kết thúc, delta trở về identity, do đó ngắm toàn phần, ngắm giữa chừng, vào/ra ADS đều giữ nguyên stance hiện tại. Reload/equip vẫn cần full-pose override riêng.</p>
+<p>Đây là cách gỡ reference thay thế đã biết để giữ chuyển động còn lại. Nó không khôi phục authored base bị mất hay chứng minh native WARDOGS dùng đúng graph này. Nhánh nghiên cứu chỉ áp dụng AK74, có đường đối chứng legacy.</p>
+<h2 id="ak74-mechanismaudit-20260924-vi-md-nhung-lop-con-chong-len-chuyen-dong-ak74">Những lớp còn chồng lên chuyển động AK74</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Lớp</th>
+<th>Hiện trạng trước hiệu chỉnh riêng AK74</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Animation tay</td>
+<td>Hip/AimFire riêng, 1 giây, 60 Hz, RateScale 1</td>
+<td>Có nguồn; additive base cần xử lý như trên</td>
+</tr>
+<tr>
+<td>Animation cơ khí</td>
+<td><code>A_Weap_AK74M_Fire</code>, 1 giây</td>
+<td>Cùng clock với tay; không phải nguồn controller recoil</td>
+</tr>
+<tr>
+<td>Controller recoil</td>
+<td>0,75° hip; ADS nhân 0,7; yaw ngẫu nhiên ±0,10° trước hệ số ADS</td>
+<td>Thông số study, chưa lấy từ graph gốc</td>
+</tr>
+<tr>
+<td>Mesh kick</td>
+<td>Mỗi phát +0,8 cm, cap 3 cm; thêm pitch = kick ×0,8</td>
+<td>Thêm lên animation gốc; không phải tham số đã đo từ video</td>
+</tr>
+<tr>
+<td>Sway</td>
+<td>Đọc delta của toàn bộ control rotation</td>
+<td>Cả recoil và tự hồi tâm cũng gây sway dù chuột đứng yên</td>
+</tr>
+<tr>
+<td>Hồi controller</td>
+<td>Đợi 0,12 giây, nội suy về 0 tốc độ 7/s</td>
+<td>Có thể kéo tâm xuống sau khi người chơi đã tự bù chuột; chưa biết native policy</td>
+</tr>
+<tr>
+<td>Source CameraBone</td>
+<td>Có track AK hip, đỉnh khoảng 0,788° ở frame 2; mặc định diagnostic tắt</td>
+<td>Track animation camera không thay thế toàn bộ recoil/gameplay camera</td>
+</tr>
+<tr>
+<td>Nhịp bắn</td>
+<td>Showcase 650 RPM theo audio, khoảng 92,3 ms/phát</td>
+<td>60 Hz cho số frame xen kẽ; không nên ép mọi khoảng thành sáu frame</td>
+</tr>
+<tr>
+<td>Muzzle</td>
+<td>Point light tạm 35 ms</td>
+<td>Không có hình dạng flash gốc nên cảm giác và mốc hình ảnh khác</td>
+</tr>
+<tr>
+<td>Âm thanh</td>
+<td>Fire core; routing/tail/mix chưa đủ</td>
+<td>Đúng một WAV không tạo được âm thanh hoàn chỉnh của native gun</td>
+</tr>
+</tbody></table></div>
+<p>Không có lỗi “controller recoil bị cộng hai lần” trong <code>AWardogsVideoCharacter::ApplyWeaponRecoil</code>: hàm giữ trạng thái trước <code>Super</code>, rồi ghi lại controller từ trạng thái đó. Tuy nhiên camera recoil, animation xương, procedural mesh kick và sway là các lớp khác nhau, vẫn cộng vào trải nghiệm nhìn thấy.</p>
+<p>Sway hiện dùng góc thay đổi <strong>mỗi frame</strong>, không chuẩn hóa theo delta time; vì vậy cùng tốc độ quay chuột cho biên độ khác nhau giữa 60 và 120 Hz. Đây là điểm cần kiểm tra riêng, không nên đánh đồng với sai animation.</p>
+<h2 id="ak74-mechanismaudit-20260924-vi-md-tai-sao-phai-kiem-tra-single-auto-hip-va-ads-rieng">Tại sao phải kiểm tra single, auto, hip và ADS riêng</h2>
+<p>Một phát hip có thể gần đúng vì Fire và Idle cùng base. ADS bộc lộ lỗi nền ngay. Bắn tự động restart clip dài một giây mỗi khoảng 92 ms; vì thế chỉ phần đầu clip xuất hiện trong chuỗi và pose nhảy lúc restart. Cách native chồng/fade/cắt montage chưa được giải mã. Đo clip peak một giây rồi chỉnh toàn bộ recoil theo peak ấy sẽ sai đối với auto.</p>
+<p>Cần đối chứng tối thiểu: old full-pose / corrected local additive; corrected có và không mesh kick; sway từ chuột riêng so với sway ăn cả recoil; hip single / hip auto / ADS single / ADS auto; bóp/nhả ADS trong action. So sánh đồng thời vị trí sight tương đối camera và chuyển động cảnh nền. Chuyển động tay không được dùng để suy ra controller recoil khi chưa tách hai lớp này.</p>
+<h2 id="ak74-mechanismaudit-20260924-vi-md-kiem-tra-vat-lieu-ak74">Kiểm tra vật liệu AK74</h2>
+<p>File Mutable hiện chọn <code>MI_AK74_Handguard</code> (slot 6, logical mesh 348) và <code>MI_AK74_Stock</code> (slot 1, logical mesh 184). Receipt import gắn đúng BCA. PNG handguard có vân gỗ nâu rõ ràng; không thiếu texture gỗ. UV0 của hai phần phủ 0..1 và có nhiều mẫu nâu; UV1 bằng (0,0). Nếu render nhìn xám/đen, cần kiểm tra graph thực trong UE, slot và chiếu sáng trước khi thay mesh. Script read-only <code>inspect_ak74_materials.py</code> ghi graph/UV sampler vào <code>Saved/AK74Study/material-readback.json</code>; chưa có kết quả script thì không kết luận lỗi UV hay variant.</p>
+<p>Readback UE đã được root chạy thành công: cả 12 slot khớp với nguồn đã chọn. Slot 1/6 lấy đúng stock/handguard BCA, <code>sRGB=true</code>, sampler <code>const_coordinate=0</code>, UV input không nối, RGB nối BaseColor. Như vậy không có bằng chứng gán nhầm material hay đọc nhầm UV1. Normal chưa nối, roughness 0,62 và metallic 0 là shader study; màu sắc trong cảnh còn phụ thuộc ánh sáng/phơi sáng, không thể suy từ việc nhìn tối thành “không có gỗ”.</p>
+<h2 id="ak74-mechanismaudit-20260924-vi-md-gioi-han-cua-ban-doi-chung-chi-sua-pose">Giới hạn của bản đối chứng chỉ sửa pose</h2>
+<p>Capture root <code>7885D54E46E227E5DDCAB887EE044150</code> đã cho ADS giữ nền và audit xương qua. Tuy nhiên tên “pose-only” nghĩa là <strong>chỉ thay cách ghép pose so với baseline</strong>, không phải chỉ còn animation: frame 0 ADS vẫn có <code>viewmodelKick=0.6</code>, tương đương pitch cả mesh 0,48° và lùi 0,6 cm. Vì vậy không nên giảm weight animation nguồn chỉ dựa vào hình capture này trước khi tách kick ra.</p>
+<p>Sau compose local đúng, chuyển động <code>weapon_r</code> riêng của AimFire so với ADS là <code>(0,2332; -1,7182; 0,2915)</code> cm / 0,1715° tại frame 0 và <code>(0,4982; -2,5016; 0,4000)</code> cm / 0,5707° tại frame 2. Offset đầu clip đến từ upperarm/lowerarm/hand; <code>CameraBone</code> frame 0 trùng Idle hoàn toàn. Do đó áp CameraBone relative Idle thay vì relative Fire(0) không thể triệt tiêu bước nhảy đầu. Chưa có phép đo pixel độc lập để biến các con số xương này thành sai số video.</p>
+<h2 id="ak74-mechanismaudit-20260924-vi-md-tai-kiem-tra">Tái kiểm tra</h2>
+<p><code>Scripts/audit_ak74_pose_bases.py</code> tạo <a href="../references.html#local-74ed97c7845f">JSON đo xương (workspace)</a>, kiểm SHA source trước khi đọc. Native probe sau sửa đo <code>weapon_r</code> thật, so với kết quả compose từng xương local; ghi reference clip, thời gian reference, current ADS clip/time/weight và recoil weight. Tolerance vẫn 0,05 cm / 0,05°. Bài kiểm tra này chứng minh công thức runtime hoạt động đúng; hình ảnh, camera, âm thanh và cảm giác so với video cần bằng chứng riêng.</p>
+<h2 id="ak74-mechanismaudit-20260924-vi-md-xac-nhan-clip-ads-bang-montage-goc-khong-chi-bang-ten">Xác nhận clip ADS bằng montage gốc, không chỉ bằng tên</h2>
+<p>Đã đọc metadata của <code>/WEPN_001/Animation/Character/Montages/FP/AM_FP_AK74M_Fire.AM_FP_AK74M_Fire</code>. File chứng cứ là <code>WardogsPorting/Demos/GunGameplay/Files/metadata_5da6b19a468a_7a8d34fd2429.json</code>, SHA-256 <code>7a8d34fd24297f70e7e946e63ebff4cd49f61aa6dbc0a6f270344a2d67ffc7c4</code>.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Slot được lưu trong montage</th>
+<th>AnimSequence được tham chiếu</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>BasicAction, Crouch, Prone</td>
+<td><code>/WEPN_001/Animation/Character/Sequences/FP/A_FP_AK74M_Fire.A_FP_AK74M_Fire</code></td>
+</tr>
+<tr>
+<td>ADS, CrouchADS, ProneADS</td>
+<td><code>/WEPN_001/Animation/Character/Sequences/FP/A_FP_AK74M_Standing_ADS_Fire.A_FP_AK74M_Standing_ADS_Fire</code></td>
+</tr>
+<tr>
+<td>ScopeADS, CrouchScopeADS</td>
+<td><code>A_FP_AK74M_Stand_ADS_Scope_Fire</code></td>
+</tr>
+<tr>
+<td>ProneScopeADS</td>
+<td><code>A_FP_AK74M_Prone_ADS_Scope_Fire</code></td>
+</tr>
+</tbody></table></div>
+<p>Montage lưu blend-in <strong>0,0 giây</strong>, blend-out <strong>0,4 giây</strong>, kiểu Linear. Mỗi segment bắt đầu ở 0, kết thúc ở 1 giây, rate 1, loop 1. Đây là bằng chứng trực tiếp rằng Standing_ADS_Fire là clip được thiết kế cho slot ADS. Đổi sang Hip Fire hoặc thêm một blend-in tùy ý không phải sửa lỗi chọn clip theo bằng chứng nguồn. Dữ liệu này vẫn chưa cho biết AnimGraph gốc lấy slot nào ở mỗi thời điểm, mask từng xương, chạy IK, hiệu chỉnh sight/camera hay dùng trọng số nào; không thể lấy tên slot để khẳng định graph nghiên cứu đã giống graph gốc.</p>
+<p>Đo thêm hai clip đều được compose local lên ADS_In cuối, so với chính nền ADS đó:</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Clip / thời điểm</th>
+<th>Delta vị trí component <code>weapon_r</code> (X; Y; Z), cm</th>
+<th align="right">Góc xương</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Hip Fire / 0 ms</td>
+<td>(0,0058; 0,0017; 0,0023)</td>
+<td align="right">0,0523°</td>
+</tr>
+<tr>
+<td>Hip Fire / 16,7 ms</td>
+<td>(-0,2095; -1,9862; -0,1448)</td>
+<td align="right">1,4582°</td>
+</tr>
+<tr>
+<td>Hip Fire / 33,3 ms</td>
+<td>(-0,3772; -3,9747; -0,1558)</td>
+<td align="right">2,8388°</td>
+</tr>
+<tr>
+<td>Hip Fire / 100 ms</td>
+<td>(-0,0576; -3,6484; -0,0676)</td>
+<td align="right">1,5796°</td>
+</tr>
+<tr>
+<td>ADS Fire / 0 ms</td>
+<td>(0,2332; -1,7182; 0,2915)</td>
+<td align="right">0,1715°</td>
+</tr>
+<tr>
+<td>ADS Fire / 16,7 ms</td>
+<td>(0,3888; -2,2734; 0,3735)</td>
+<td align="right">0,2375°</td>
+</tr>
+<tr>
+<td>ADS Fire / 33,3 ms</td>
+<td>(0,4982; -2,5016; 0,4000)</td>
+<td align="right">0,5707°</td>
+</tr>
+<tr>
+<td>ADS Fire / 100 ms</td>
+<td>(0,0353; -0,9416; 0,1780)</td>
+<td align="right">0,2241°</td>
+</tr>
+</tbody></table></div>
+<p>Hip Fire gần identity ở frame đầu nhưng những frame sau có độ lùi và góc lớn hơn rõ rệt; thay clip không chỉ loại offset đầu mà thay cả chuyển động. X/Y/Z ở đây là trục component của skeleton, chưa phải trục màn hình. Không được diễn giải dấu của bảng thành hướng pixel khi chưa tính transform mesh, camera và phép chiếu. Toàn bộ frame 0–6, SHA đầu vào và slot gốc được lưu trong <code>Saved/AK74Focus/source-fire-binding-audit.json</code>.</p>
+<h2 id="ak74-mechanismaudit-20260924-vi-md-ket-qua-xac-minh-runtime-cuoi-cua-vong-nay">Kết quả xác minh runtime cuối của vòng này</h2>
+<p>Các mô tả kick, sway và tự hồi tâm phía trên là trạng thái <strong>trước bản sửa riêng AK74</strong>. Bản sau dùng curve đo từ video, tổng phản hồi theo deadline từng phát, giữ phần offset sau khi curve ổn định; không cộng generic mesh kick, generic recoil return hay sway do chính recoil gây ra. Burst gain là fit nghiên cứu có giới hạn theo chuỗi đã đo, không phải thông số giải mã từ game gốc.</p>
+<p><code>Scripts/validate_ak74_focus_runtime.py</code> đã kiểm tra hai manifest cuối <code>44D84FE24D42FD94FB579C8A5E1DF80F</code> và <code>FBEB036041B581ED8B252F8EB776FE89</code>: <strong>648 frame, 6 tình huống, 18.852 phép kiểm tra, không lỗi</strong>. Bốn tình huống bắn có lần lượt 1/1/11/11 phát; hai tình huống còn lại bóp/nhả ADS trong action. Script tự tính tổng curve từ deadline, kiểm phần delta deferred do ngưỡng SetControlRotation của UE, không có generic kick/return, pose xương thực và các frame ADS trung gian. Các sai số curve sau tính deferred nhỏ hơn 0,0002°.</p>
+<p>Receipt <code>Saved/AK74Focus/runtime-validation.json</code> có hash manifest và từng PNG. Telemetry xác nhận tải 10 biến thể fire core, số yêu cầu phát khớp số phát súng và không lặp biến thể ở hai phát liền nhau; đây không phải bản ghi âm để chứng nhận đã nghe đúng mix. Các kiểm tra runtime này cũng không chứng nhận video giống 1:1: chuyển động sight theo pixel, cấu trúc slot/IK gốc, ánh sáng, muzzle và mix âm thanh vẫn cần đối chiếu riêng.</p>
+</article></main></body></html>

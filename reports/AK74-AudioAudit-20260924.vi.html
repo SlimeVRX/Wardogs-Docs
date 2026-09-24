@@ -1,0 +1,131 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="description" content="Báo cáo hiệu chỉnh AK74, nền tảng Gun Gameplay và quy trình tái tạo cảm giác bắn từng khẩu."><title>AK74: âm thanh đang làm cảm giác bắn khác video ở đâu? · Wardogs Docs</title><link rel="stylesheet" href="../assets/styles.css"></head><body><header class="masthead"><div class="brand">WARDOGS DOCS<span>Cẩm nang Gun Gameplay · tiếng Việt · 24.09.2026</span></div><div class="actions"><a href="../index.html">Cẩm nang</a><a href="../references.html">Báo cáo & bằng chứng</a><a href="https://github.com/SlimeVRX/Wardogs-Docs">GitHub ↗</a><button class="print" onclick="window.print()">In / lưu PDF</button></div></header><main class="report-layout"><article class="chapter"><p class="report-date">BÁO CÁO LỊCH SỬ · <a href="../references.html">Về danh mục</a> · <a href="../content/reports/AK74-AudioAudit-20260924.vi.md">Markdown</a></p><aside class="notice">Báo cáo này giữ trạng thái tại thời điểm ghi. Các nhận xét về asset, sound, ADS và thông số có thể đã được sửa ở bước sau. Đọc <a href="../index.html#case-study">lịch sử AK74</a> và <a href="../index.html#start">kết quả hiện tại</a> trước khi sử dụng số liệu.</aside><h1 id="ak74-audioaudit-20260924-vi-md-title">AK74: âm thanh đang làm cảm giác bắn khác video ở đâu?</h1>
+<p>Phạm vi: video <code>bxMd6SvtJi8</code>, nguồn local 1080p60 có SHA256 <code>011eaf4148ce2c9c717c2bb83c4b6407bbcfec67fe392219617ba27d046725c9</code>; chỉ AK74. Đây là đối chiếu waveform cùng loại asset, không phải suy đoán bằng tên súng.</p>
+<h2 id="ak74-audioaudit-20260924-vi-md-ket-luan-co-bang-chung">Kết luận có bằng chứng</h2>
+<p>Trước sửa, <code>WardogsWeaponComponent::FireOnce</code> gọi <code>PlayLabSound</code> đúng một lần mỗi viên. Tuy nhiên <code>PlayLabSound</code> chỉ phát <code>SFX_Weapon_AR_01_Fire_1p_Core_01</code>, hệ số âm lượng thử nghiệm <code>0.5</code>, đặt tại muzzle đang di chuyển, qua attenuation có <code>bSpatialize=true</code>. Không tìm thấy một lần gọi fire sound thứ hai trong luồng này. Nó <strong>lặp cùng một mẫu âm</strong>, không phải một vòng audio loop.</p>
+<p>Video có nhiều biến thể core khác nhau. Đã xuất thành công 35 SoundWave riêng của AK74, chỉ đọc archive và không chạy game gốc: <strong>10 Core, 5 Punch, 10 Mech, 9 Rattle, 1 FinalBullet</strong>. Dùng tương quan chéo waveform để so từng core với âm thanh video:</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Cửa sổ âm thanh video</th>
+<th>Mẫu khớp mạnh nhất</th>
+<th align="right">Thời điểm trong audio nguồn</th>
+<th align="right">Tương quan của 80 ms đầu</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Hip single, bắt đầu 415 s</td>
+<td>Core_02</td>
+<td align="right">415.326021 s</td>
+<td align="right">0.7212</td>
+</tr>
+<tr>
+<td>ADS single, bắt đầu 427 s</td>
+<td>Core_07</td>
+<td align="right">427.655354 s</td>
+<td align="right">0.5150</td>
+</tr>
+<tr>
+<td>Hip auto, bắt đầu 416.2 s</td>
+<td>Core_09</td>
+<td align="right">417.710396 s</td>
+<td align="right">0.7157</td>
+</tr>
+<tr>
+<td>Hip auto</td>
+<td>Core_02</td>
+<td align="right">416.510604 s</td>
+<td align="right">0.7045</td>
+</tr>
+<tr>
+<td>Hip auto</td>
+<td>Core_03</td>
+<td align="right">416.972063 s</td>
+<td align="right">0.6931</td>
+</tr>
+<tr>
+<td>ADS auto, bắt đầu 429 s</td>
+<td>Core_08</td>
+<td align="right">429.702854 s</td>
+<td align="right">0.6032</td>
+</tr>
+</tbody></table></div>
+<p>Phương pháp: PCM stereo 48 kHz, lấy mono để đo; đạo hàm bậc một để giảm nền và các lớp trầm; tương quan chuẩn hóa với 80 ms đầu của từng source core. Có Opus, các lớp âm khác, nền và mix nên không chờ tương quan bằng 1. Các mốc trên là <strong>mốc âm thanh</strong>, không tự đồng nhất với frame muzzle flash hoặc input.</p>
+<p>Kết luận đủ mạnh: dùng Core_01 cho mọi viên không thể cho cùng biến thiên âm sắc như video. Đổi bank 10 mẫu sẽ bỏ sự lặp máy móc này. Thuật toán chọn ngẫu nhiên gốc và seed gốc chưa được phục hồi; lựa chọn không lặp liền nhau trong lab là quy tắc tái tạo, không phải quy tắc được giải mã từ game.</p>
+<h2 id="ak74-audioaudit-20260924-vi-md-punch-thieu-trong-ban-cu-nhung-chua-biet-dung-mixer-goc">Punch thiếu trong bản cũ, nhưng chưa biết đúng mixer gốc</h2>
+<p>Tất cả bốn mẫu đầu đã xuất trước đây đều là stereo 48 kHz. Đo các mẫu:</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Lớp</th>
+<th align="right">Độ dài file</th>
+<th>Đặc tính định lượng</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Core_01</td>
+<td align="right">2.600 s</td>
+<td>95% năng lượng trước 92.83 ms, 99% trước 166.50 ms; phần lớn file là đuôi nhỏ</td>
+</tr>
+<tr>
+<td>Punch_01</td>
+<td align="right">0.300 s</td>
+<td>80.32% năng lượng nằm 20–150 Hz; bổ sung lực trầm</td>
+</tr>
+<tr>
+<td>Mech_01</td>
+<td align="right">0.400 s</td>
+<td>Đã có khoảng im lặng 40.08 ms ở đầu file trước transient; không nên tự thêm tiếp 40 ms delay</td>
+</tr>
+<tr>
+<td>FinalBullet_01</td>
+<td align="right">0.430 s</td>
+<td>Lớp cơ khí cao tần, không phải core thông thường</td>
+</tr>
+</tbody></table></div>
+<p>Thử fit tuyến tính waveform 200 ms của hai viên đơn, chọn đúng variant và chỉ cho offset -4..4 sample:</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Viên đo</th>
+<th align="right">Chỉ core: phần phương sai giải thích được</th>
+<th align="right">Core + Punch</th>
+<th align="right">Hệ số fit Core / Punch</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Hip</td>
+<td align="right">72.47%</td>
+<td align="right">86.23%</td>
+<td align="right">Core_02 = 0.7290 / Punch_04 = 0.5587</td>
+</tr>
+<tr>
+<td>ADS</td>
+<td align="right">55.66%</td>
+<td align="right">78.73%</td>
+<td align="right">Core_07 = 0.6813 / Punch_02 = 0.8716</td>
+</tr>
+</tbody></table></div>
+<p>Hai mẫu Punch tốt nhất đều không cần dịch sample tương đối với core. Đây là bằng chứng lớp trầm riêng đang thiếu. Nhưng tỷ lệ Punch/Core là <strong>0.766 và 1.279</strong>, chênh 67%; chỉ hai viên không đủ khẳng định nguyên nhân là ADS, random gain, codec, hay mixer. Không biến các hệ số fit này thành “giá trị native”. Thêm Mech/Rattle vào phép fit hiện tại chỉ cải thiện dưới 0.02 điểm phần trăm; kết quả này không chứng minh chúng vắng mặt, vì có thể khác variant, pitch hoặc trigger.</p>
+<p><code>MSS_Weapon_AR_AK74_Fire_1p_Preset</code> có trong catalog. Đã thử inspect strict: thất bại ở <code>MetasoundFrontendClassName</code> vì dữ liệu có property thứ tư ngoài mapping đang có. <code>AT_AR_AK74_1p</code> cũng chưa có mapping <code>SweejAmbienceAreaTypePreset</code>. Vì vậy chưa đọc được gain, randomization, layers/tails, trigger hay environment routing của mixer gốc. Không sử dụng dữ liệu deserialize dở làm kết luận.</p>
+<h2 id="ak74-audioaudit-20260924-vi-md-phan-sua-co-the-kiem-tra">Phần sửa có thể kiểm tra</h2>
+<ul>
+<li><code>UWardogsAK74AudioComponent</code>: giữ 10 core của chính AK74; <code>FRandomStream</code> riêng seed 17474, không tác động random của spread/recoil; không chọn trùng viên ngay trước.</li>
+<li>Bank được preload trong <code>BeginPlay</code>, trước khi người chơi bóp cò, để viên đầu không phải tải đồng bộ cả 10 file.</li>
+<li>Phát core của người chơi local bằng stereo 2D, không pan theo muzzle; đây là quyết định tái tạo cho nguồn first-person, chưa phải phục hồi routing MetaSound gốc. Âm thanh được đánh dấu gameplay, không phải UI, để tôn trọng pause.</li>
+<li>Giữ hệ số 0.5 đang dùng; không tăng loudness để che khác biệt. Không tự ghép Punch/Mech/Rattle khi hệ số và điều kiện còn chưa đủ chắc.</li>
+<li>Mỗi lần gọi thành công vẫn là <strong>một request âm thanh cho một viên</strong>. Caller tăng bộ đếm logical shot; component giữ bộ đếm voice và index variant riêng.</li>
+<li>Importscript kiểm tra SHA256 của từng WAV, nguồn đúng namespace AK74 unsuppressed, đủ 10 core, stereo 48 kHz; chỉ ghi config bank sau khi cả 10 được import và lưu thành công.</li>
+</ul>
+<p>Thời gian giữa các request âm thanh hiện vẫn bị giới hạn bởi game-thread tick: 650 RPM có chu kỳ 92.31 ms nhưng ở 60 Hz thời điểm gọi có thể xen kẽ 83.33/100 ms. Audio-clock/Quartz/MetaSound scheduling chưa được triển khai. Đừng gọi việc khớp logic RPM là đã khớp từng sample âm thanh.</p>
+<h2 id="ak74-audioaudit-20260924-vi-md-bien-nhan-va-cach-chay-lai">Biên nhận và cách chạy lại</h2>
+<ul>
+<li><a href="../references.html#local-5beb9ed54782">Manifest 35 mẫu xuất mới (workspace)</a>.</li>
+<li><a href="../references.html#local-e089920a6502">Đo waveform/source PCM và SHA256 (workspace)</a>.</li>
+<li><a href="../references.html#local-5f16864498d9">Tương quan từng variant (workspace)</a>.</li>
+<li><a href="../references.html#local-3452e06a36df">Fit các lớp (workspace)</a>.</li>
+<li>Nghe phép fit offline: <a href="../references.html#local-11d8e761c290">audio video (workspace)</a>, <a href="../references.html#local-ac8fcb7074bd">chỉ Core (workspace)</a>, <a href="../references.html#local-b19a6401c3d6">Core + Punch (workspace)</a>. Cả ba cùng một hệ số headroom, không normalize riêng. Đây là phép fit của một viên đã biết, <strong>không phải audio gameplay đang chạy</strong>; Punch vẫn chưa được bật trong runtime.</li>
+<li><a href="../references.html#local-05ffeebc9e25">Biên nhận strict inspect thất bại, ghi đúng giới hạn mapping (workspace)</a>.</li>
+<li><a href="../references.html#local-c2f87e19a796">Script import vào Unreal (workspace)</a>, tạo <code>Saved/AK74Focus/audio-import.json</code> khi root chạy trong UE.</li>
+</ul>
+<p>Các scripts phân tích độc lập nằm trong <code>WardogsPorting/research/gameplay/bxMd6SvtJi8/ak74-focus-20260924</code>: <code>audit_audio.py</code>, <code>match_audio.py</code>, <code>fit_audio_layers.py</code>. Chúng không sửa gameplay hay tự chạy Unreal. Báo cáo này không thay thế nghe A/B runtime có đầy đủ audio; captures PNG im lặng không xác minh được chất lượng âm thanh.</p>
+</article></main></body></html>

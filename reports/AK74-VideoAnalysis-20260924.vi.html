@@ -1,0 +1,280 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="description" content="Báo cáo hiệu chỉnh AK74, nền tảng Gun Gameplay và quy trình tái tạo cảm giác bắn từng khẩu."><title>AK74: lỗi cảm giác bắn và phép đo từng frame · Wardogs Docs</title><link rel="stylesheet" href="../assets/styles.css"></head><body><header class="masthead"><div class="brand">WARDOGS DOCS<span>Cẩm nang Gun Gameplay · tiếng Việt · 24.09.2026</span></div><div class="actions"><a href="../index.html">Cẩm nang</a><a href="../references.html">Báo cáo & bằng chứng</a><a href="https://github.com/SlimeVRX/Wardogs-Docs">GitHub ↗</a><button class="print" onclick="window.print()">In / lưu PDF</button></div></header><main class="report-layout"><article class="chapter"><p class="report-date">BÁO CÁO LỊCH SỬ · <a href="../references.html">Về danh mục</a> · <a href="../content/reports/AK74-VideoAnalysis-20260924.vi.md">Markdown</a></p><aside class="notice">Báo cáo này giữ trạng thái tại thời điểm ghi. Các nhận xét về asset, sound, ADS và thông số có thể đã được sửa ở bước sau. Đọc <a href="../index.html#case-study">lịch sử AK74</a> và <a href="../index.html#start">kết quả hiện tại</a> trước khi sử dụng số liệu.</aside><h1 id="ak74-videoanalysis-20260924-vi-md-title">AK74: lỗi cảm giác bắn và phép đo từng frame</h1>
+<p>Phạm vi tài liệu này chỉ là AK74: hip một viên, ADS một viên, hip giữ cò và ADS giữ cò. Nguồn là <a href="https://www.youtube.com/watch?v=bxMd6SvtJi8" target="_blank" rel="noopener noreferrer">WARDOGS All Weapons Showcase</a>, file local <code>source-1080.webm</code>, 1920×1080, 60 FPS, SHA256 <code>011eaf4148ce2c9c717c2bb83c4b6407bbcfec67fe392219617ba27d046725c9</code>. Không biết input chuột, FOV tuyệt đối hoặc build game của người quay. Mốc nhìn thấy trong video không phải mốc nhấn chuột.</p>
+<h2 id="ak74-videoanalysis-20260924-vi-md-1-loi-ro-nhat-dang-ads-nhung-phat-fire-tren-tu-the-hip">1. Lỗi rõ nhất: đang ADS nhưng phát Fire trên tư thế hip</h2>
+<p>Capture trước sửa <code>Saved/RuntimeBurst/328C1D7042CC8F615A44FFB6EB869EFF/manifest.json</code> cho thấy ngay frame 0 của <code>ak74-ads-single</code>, súng chạy sang phải thành tư thế hip. Đến khoảng 1,08–1,2 giây mới trở lại đường ngắm. Đây là sai khác rất lớn, có thể thấy trực tiếp bằng ảnh; số bone khớp clip không phát hiện được vì clip được đặt lên sai tư thế nền.</p>
+<p>Ở video, thước ngắm sau vẫn gần giữa màn hình suốt viên bắn ADS. Trong 200ms đầu, điểm đo ở thước ngắm chỉ dao động khoảng −3 đến +3,4 pixel tại1080p. Bản trước sửa lệch ngang xấp xỉ190 pixel1080p giữa tư thế hip khi bắn và tư thế ADS sau đó. Đây là hai phép quan sát tại cùng vị trí bộ phận, không phải phép đăng ký pixel giữa hai môi trường.</p>
+<p>Nguyên nhân được điều tra trong source: AimFire được xuất thành FullPose từ một base hip idle thay thế; lấy FullPose đó đè lên ADS bằng alpha1 làm mất ADS. Cách sửa cần khôi phục delta của animation rồi cộng lên base ADS hiện tại. Chỉ tăng tốc clip hoặc đổi recoil không giải quyết được lỗi này.</p>
+<p><a href="../references.html#local-e3d92080dd81">Trang đối chiếu từng frame (workspace)</a> có bản trước sửa, bản chỉ sửa pose và bản có recoil mới khi capture cuối đã được thêm. Khi chưa có capture cuối, trang ghi rõ trạng thái chờ.</p>
+<h2 id="ak74-videoanalysis-20260924-vi-md-2-camera-nguon-khong-tu-keo-ve-vi-tri-cu-nhu-ban-lab">2. Camera nguồn không tự kéo về vị trí cũ như bản lab</h2>
+<p>Phép đo độc lập với chuyển động súng:</p>
+<ul>
+<li>Chọn feature của cảnh ở hai vùng trái/phải, bỏ HUD, title và vũ khí.</li>
+<li>Theo dõi bằng Lucas–Kanade pyramidal, kiểm tra forward/backward dưới1pixel.</li>
+<li>Fit homography bằng RANSAC từ feature ban đầu tới từng frame; đo dịch chuyển tại tâm ảnh.</li>
+<li>Đo riêng feature trên thước ngắm sau. Không dùng chuyển động súng làm chuyển động camera.</li>
+<li>Các viên đơn giữ264–351 feature cảnh, sai số fit trung vị khoảng0,09–0,15pixel. Sai số này không bao gồm bất định FOV, input, motion blur hay build khác nhau.</li>
+</ul>
+<p>Y dương trong bảng nghĩa là cảnh trượt xuống trong ảnh, tương ứng hướng nhìn tăng lên. Đơn vị là pixel của video1080p.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th align="right">Sau mốc nhìn thấy</th>
+<th align="right">Cảnh HIP</th>
+<th align="right">Cảnh ADS</th>
+<th align="right">Thước ngắm ADS</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">0ms</td>
+<td align="right">−3,08</td>
+<td align="right">+2,43</td>
+<td align="right">+3,39</td>
+</tr>
+<tr>
+<td align="right">17ms</td>
+<td align="right">−3,36</td>
+<td align="right">+0,26</td>
+<td align="right">−2,94</td>
+</tr>
+<tr>
+<td align="right">33ms</td>
+<td align="right">+1,35</td>
+<td align="right">+2,42</td>
+<td align="right">−2,97</td>
+</tr>
+<tr>
+<td align="right">50ms</td>
+<td align="right">+5,65</td>
+<td align="right">+7,37</td>
+<td align="right">−1,67</td>
+</tr>
+<tr>
+<td align="right">67ms</td>
+<td align="right">+8,20</td>
+<td align="right">+12,28</td>
+<td align="right">+0,12</td>
+</tr>
+<tr>
+<td align="right">100ms</td>
+<td align="right">+13,81</td>
+<td align="right">+16,92</td>
+<td align="right">+1,66</td>
+</tr>
+<tr>
+<td align="right">150ms</td>
+<td align="right">+11,37</td>
+<td align="right">+16,55</td>
+<td align="right">−0,66</td>
+</tr>
+<tr>
+<td align="right">200ms</td>
+<td align="right">+10,17</td>
+<td align="right">+15,13</td>
+<td align="right">−1,83</td>
+</tr>
+<tr>
+<td align="right">300ms</td>
+<td align="right">+13,35</td>
+<td align="right">+17,50</td>
+<td align="right">+1,14</td>
+</tr>
+<tr>
+<td align="right">400ms</td>
+<td align="right">+12,90</td>
+<td align="right">+17,15</td>
+<td align="right">+0,94</td>
+</tr>
+<tr>
+<td align="right">500ms</td>
+<td align="right">+12,64</td>
+<td align="right">+16,99</td>
+<td align="right">+0,81</td>
+</tr>
+<tr>
+<td align="right">600ms</td>
+<td align="right">+12,90</td>
+<td align="right">+17,18</td>
+<td align="right">+0,91</td>
+</tr>
+</tbody></table></div>
+<p>Ở500ms, video còn giữ khoảng91,5% độ tăng đỉnh ở HIP và97,1% ở ADS. Capture trước sửa chỉ giữ5,77% vì cộng pitch tức thời rồi chạy hồi tâm sau120ms với tốc độ7. HIP từ0,75° rơi còn0,04324°; ADS từ0,525° còn0,03027°.</p>
+<p>Nguồn có phần tăng dần khoảng100ms, gợn nhỏ rồi giữ vị trí mới. Bốn viên ADS cách nhau trong425,5–427,8 giây tạo thành bốn bậc tăng của cảnh, trong khi thước ngắm trở về gần tâm sau mỗi viên. Điều này ủng hộ việc bỏ spring kéo toàn bộ aim về điểm trước bắn. Tuy vậy, video công khai không chứng minh người chơi không di chuột; đây là bằng chứng quan sát lặp lại, không phải code recoil gốc.</p>
+<h2 id="ak74-videoanalysis-20260924-vi-md-3-thong-so-fit-theo-dieu-kien-fov-cua-lab">3. Thông số fit theo điều kiện FOV của lab</h2>
+<p><a href="../references.html#local-c7f49feebdca">AK74RecoilFit.json (workspace)</a> được sinh từ từng frame đo, không lấy độ quay của <code>weapon_r</code> làm recoil camera:</p>
+<p><code>pitch = atan(worldY / (960 / tan(47°) × ironRatio))</code></p>
+<p>Giả định HIP FOV ngang94° của lab và tỉ lệ zoom ADS1,28. Do FOV nguồn không biết, các góc này là phép fit có điều kiện. Phần giữ lại đo được:</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Chế độ</th>
+<th align="right">Pixel nguồn giữ lại</th>
+<th align="right">Góc có điều kiện</th>
+<th>Cửa sổ lấy trung bình</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HIP</td>
+<td align="right">12,8554px</td>
+<td align="right">0,822716°</td>
+<td>500–800ms,19frame</td>
+</tr>
+<tr>
+<td>ADS</td>
+<td align="right">17,1238px</td>
+<td align="right">0,856155°</td>
+<td>500–600ms,7frame</td>
+</tr>
+</tbody></table></div>
+<p>Không dùng ADS đến800ms vì nguồn đã bắn viên thứ hai. Độ dao động trong đoạn ổn định tương ứng0,0060°/0,0030°; đó không phải khoảng sai số tổng. Sai số hệ thống vì FOV hoặc mouse input lớn hơn và chưa xác định.</p>
+<p>Các sample0–500ms giữ gợn/dip nhìn thấy; sau600ms giữ plateau. Vì quỹ đạo đo là tổng chuyển động camera nhìn thấy, không cộng thêm toàn bộ <code>CameraBone</code> một lần nữa. Không tự suy diễn hệ số giảm recoil ADS0,7: tỉ lệ pixel ADS/HIP gần với mức zoom thế giới1,28, phù hợp với góc giữ lại gần bằng nhau trong hai chế độ.</p>
+<h2 id="ak74-videoanalysis-20260924-vi-md-4-giu-co-phan-da-do-va-phan-chua-suy-ra-duoc">4. Giữ cò: phần đã đo và phần chưa suy ra được</h2>
+<p>Mốc HIP auto nhìn thấy flash đầu là416,200s; ADS auto thấy bolt chuyển động ở428,467s, đều có bất định ít nhất±1frame. Bằng chứng âm thanh đã đo trước đó cho khoảng92ms, gần650RPM.</p>
+<p>Trong đoạn HIP416,25s trở đi, cảnh tăng14,82 /35,24 /58,00 /105,62 /237,37pixel tại100/200/300/500/1000ms. Phép fit còn175 inlier ở1giây, sai số trung vị0,8pixel. Tốc độ tăng này lớn hơn việc cộng đơn giản plateau13pixel cho từng viên650RPM. Có thể liên quan tới recoil khi giữ cò, tích lũy vận tốc, camera curve hoặc input người quay. Chưa có căn cứ để chép một hệ số như thể đã đọc được từ game.</p>
+<p>Sau khoảng1,7giây của HIP auto, nhiều landmark đi ra khỏi màn hình. Dữ liệu <code>motion-curves.json</code> gắn <code>fitReliable=false</code> khi còn dưới25 inlier cảnh; không dùng đoạn đó để suy ra góc. Đường vàng trên biểu đồ dừng tại đoạn không đủ inlier. Ngay cả đoạn còn đủ inlier cũng không tách được mouse input.</p>
+<p>Runtime đối chiếu giữ cò1giây; video giữ lâu hơn. Từ thời điểm lab thả cò, hai chuỗi không còn cùng input, nên không dùng vị trí camera cuối chuỗi để kết luận chính xác1:1.</p>
+<p>Đã đo lại đoạn đầu bằng mốc viên đầu, thay vì mốc ở giữa chuỗi. Hai lượt HIP và ADS cho góc có điều kiện gần trùng nhau, trong khi yaw tương ứng chỉ dao động khoảng0,37° hoặc ít hơn:</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th align="right">Sau viên đầu</th>
+<th align="right">HIP quan sát</th>
+<th align="right">ADS quan sát</th>
+<th align="right">HIP cộng đơn giản</th>
+<th align="right">ADS cộng đơn giản</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">100ms</td>
+<td align="right">0,866°</td>
+<td align="right">1,059°</td>
+<td align="right">0,679°</td>
+<td align="right">0,917°</td>
+</tr>
+<tr>
+<td align="right">300ms</td>
+<td align="right">3,700°</td>
+<td align="right">3,666°</td>
+<td align="right">2,289°</td>
+<td align="right">2,564°</td>
+</tr>
+<tr>
+<td align="right">500ms</td>
+<td align="right">6,632°</td>
+<td align="right">6,780°</td>
+<td align="right">4,183°</td>
+<td align="right">4,431°</td>
+</tr>
+<tr>
+<td align="right">900ms</td>
+<td align="right">12,658°</td>
+<td align="right">12,903°</td>
+<td align="right">7,820°</td>
+<td align="right">8,257°</td>
+</tr>
+<tr>
+<td align="right">1000ms</td>
+<td align="right">14,040°</td>
+<td align="right">14,288°</td>
+<td align="right">8,768°</td>
+<td align="right">9,155°</td>
+</tr>
+</tbody></table></div>
+<p>Tại1giây vẫn còn201/212 inlier HIP/ADS, sai số fit hình0,91/0,68pixel. Sự nhất quán giữa hai lượt độc lập là lý do có thể thử một gain tích lũy chung cho AK74; đây vẫn là phép fit quan sát. File <code>auto-onset-curves.json</code> giữ cả X và Y để không gộp yaw vào pitch.</p>
+<p>Fit chung122 sample của hai lượt, với curve một viên đã đo và cadence650RPM:</p>
+<p><code>gain(n) = 1 + 0,7115928384 × (1 − exp(−n / 0,7248995427))</code></p>
+<p><code>n=0</code> là viên đầu nên gain luôn1. Chỉ số được chặn ở10 vì cửa sổ bằng chứng dừng ở11 viên. Gain bão hòa xấp xỉ1,71159; không tiếp tục tăng vô hạn. Bản lab reset chuỗi sau khoảng nghỉ lớn hơn hai fire interval. Quy tắc reset này là lựa chọn của bản lab, không được suy ra trực tiếp từ video.</p>
+<p>RMSE góc có điều kiện trên122 sample giảm từ2,98415° khi cộng đơn giản xuống0,27550° sau fit. Không tối ưu lệch thời gian để che sai khác. Các sai số vẫn còn: tại300ms HIP thiếu0,547°; tại1giây ADS thừa0,567°. Khác biệt khoảng một frame của onset và cách camera dao động qua các viên có thể đóng góp, nhưng chưa chứng minh nguyên nhân duy nhất. Không được gọi kết quả này là trùng từng frame hay recoil graph nguyên bản.</p>
+<p>Generator <code>fit_auto_gain.py</code> quét1.600 giá trị tau, giải hệ số biên độ có giới hạn bằng least squares; kết quả và toàn bộ residual nằm trong <code>auto-gain-fit.json</code>. Không thay đổi yaw dựa trên phép fit pitch này.</p>
+<h2 id="ak74-videoanalysis-20260924-vi-md-4a-kiem-tra-tren-anh-thuc-khong-chi-doc-telemetry">4a. Kiểm tra trên ảnh thực, không chỉ đọc telemetry</h2>
+<p>Ở lượt cuối <code>44D84FE24D42FD94FB579C8A5E1DF80F</code> (pose ADS, curve một viên và gain auto), đã theo dõi lại cảnh trong PNG Unreal độc lập với controller pitch log. Tính tương đối từ frame bắn đầu tiên và quy đổi kích thước ảnh runtime960×540 về1080p:</p>
+<ul>
+<li>HIP một viên: RMSE dọc0,1133pixel, sai số lớn nhất0,2572pixel trong37frame0–600ms. Bản trước sửa có RMSE22,2007pixel.</li>
+<li>ADS một viên: RMSE dọc0,0984pixel, sai số lớn nhất0,2050pixel trong37frame0–600ms. Bản trước sửa có RMSE20,4636pixel.</li>
+<li>HIP giữ cò: RMSE dọc5,1483pixel trong61frame0–1giây; trước gain auto là48,9565pixel. Sai số lớn nhất12,1430pixel.</li>
+<li>ADS giữ cò: RMSE dọc5,1972pixel trong61frame0–1giây; trước gain auto là59,5277pixel. Sai số lớn nhất12,8268pixel.</li>
+</ul>
+<p>Đây là bằng chứng đường chuyển động dọc đo được đã được đưa vào ảnh thực đúng thời điểm, không chỉ là config đọc ra đúng. Vì thiếu PNG runtime trước bóp cò, phép đo không kiểm chứng độ dịch chuyển tức thời từ trước bắn tới frame0. Phép đo cũng không chứng minh yaw, roll, kích thước thước ngắm, âm thanh hoặc VFX đã khớp. Số đo cuối trong <code>final-pixel-motion.json</code> và <code>gainfit-auto-pixel-motion.json</code>; các script <code>measure_runtime_pixels.py</code>/<code>measure_runtime_autos.py</code> chạy lại được với manifest khác.</p>
+<h2 id="ak74-videoanalysis-20260924-vi-md-4b-sai-khac-con-lai-o-thuoc-ngam-ads">4b. Sai khác còn lại ở thước ngắm ADS</h2>
+<p>Đã theo dõi riêng feature trên thước ngắm, lấy vị trí ổn định500ms làm mốc. Không đánh đồng kích thước lớn lên với x/y lệch đi:</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th align="right">Thời điểm</th>
+<th align="right">Nguồn: x/y so với500ms</th>
+<th align="right">Runtime: x/y so với500ms</th>
+<th align="right">Nguồn: tỉ lệ kích thước</th>
+<th align="right">Runtime: tỉ lệ kích thước</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">0ms</td>
+<td align="right">+1,67 /+2,25px</td>
+<td align="right">−8,32 /−9,94px</td>
+<td align="right">1,069</td>
+<td align="right">1,062</td>
+</tr>
+<tr>
+<td align="right">33ms</td>
+<td align="right">−0,34 /−4,16px</td>
+<td align="right">−10,83 /−13,92px</td>
+<td align="right">1,084</td>
+<td align="right">1,096</td>
+</tr>
+<tr>
+<td align="right">100ms</td>
+<td align="right">+2,13 /+0,79px</td>
+<td align="right">−2,51 /−6,23px</td>
+<td align="right">1,015</td>
+<td align="right">1,031</td>
+</tr>
+<tr>
+<td align="right">200ms</td>
+<td align="right">−0,38 /−2,64px</td>
+<td align="right">+0,40 /−0,56px</td>
+<td align="right">0,998</td>
+<td align="right">0,997</td>
+</tr>
+</tbody></table></div>
+<p>Sai số fit feature runtime khoảng0,12–0,26pixel ở540p; nguồn khoảng0,13–0,40pixel ở1080p. Lệch pha±1frame không giải thích hết chênh lệch vị trí10–15pixel. Tuy nhiên, phần thay đổi kích thước khi súng lùi về camera đã khá gần; giảm toàn bộ trọng số AimFire sẽ làm hỏng phần này. Vì thế không sửa mù bằng cách nhân animation với0,25 hoặc bỏ key đầu.</p>
+<p>Lỗi nhảy hẳn về hip khi ADS đã được loại bỏ, nhưng nguồn và runtime còn khác ở căn chỉnh sight/camera hoặc cách dùng clip. Dữ liệu <code>source-ads-sight-similarity.json</code> và <code>final-sight-motion.json</code> ghi rõ phần còn lệch. Đây là lý do kết quả cuối không được gọi là1:1 toàn bộ cảm giác bắn.</p>
+<h2 id="ak74-videoanalysis-20260924-vi-md-5-moc-du-lieu-va-cach-tai-lap">5. Mốc, dữ liệu và cách tái lập</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Ca</th>
+<th align="right">Mốc nguồn</th>
+<th>Loại mốc</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HIP một viên</td>
+<td align="right">415,200s</td>
+<td>Flash nhìn thấy đầu tiên</td>
+</tr>
+<tr>
+<td>ADS một viên</td>
+<td align="right">425,517s</td>
+<td>Bolt và thước ngắm bắt đầu chuyển động</td>
+</tr>
+<tr>
+<td>HIP auto</td>
+<td align="right">416,200s</td>
+<td>Flash đầu chuỗi</td>
+</tr>
+<tr>
+<td>ADS auto</td>
+<td align="right">428,467s</td>
+<td>Bolt đầu chuỗi</td>
+</tr>
+</tbody></table></div>
+<p>Toàn bộ PNG nguồn có PTS và SHA trong <code>WardogsPorting/research/gameplay/bxMd6SvtJi8/ak74-focus-20260924/*/frames.json</code>. File nguồn không bị đổi, PNG không được resample để đo. JPG/contact sheet chỉ là ảnh xem nhanh.</p>
+<ul>
+<li><code>extract_focus.py</code>: trích frame nguồn.</li>
+<li><code>measure_motion.py</code>: đo cảnh và thước ngắm độc lập; <code>motion-curves.json</code> giữ số đo đầy đủ.</li>
+<li><code>export_single_curves.py</code>: tạo <code>observed-single-recoil-curves.json</code>, gồm curve chuẩn hóa0–600ms.</li>
+<li><code>export_recoil_config.py</code>: tạo config góc theo FOV giả định của lab.</li>
+<li><code>Scripts/publish_ak74_focus_comparison.py --final &lt;manifest&gt;</code>: tạo trang đối chiếu cuối, kiểm tra PNG/SHA, đúngAK74/đúngaction/60Hz.</li>
+<li><code>Scripts/validate_ak74_focus_comparison.js</code>: chạy JavaScript thật với DOM giả tối thiểu, kiểm tra chọnca/bướcframe/khungtrống/đườngdẫn. Không thay thế kiểm tra layout bằng browser.</li>
+</ul>
+<p>Những khác biệt chưa được phép gọi là1:1: camera auto và input nguồn, audio nhiều lớp, muzzle flash/smoke, vỏ đạn, chất liệu tay/áo/súng, ánh sáng môi trường, motion blur, FOV viewmodel tuyệt đối và cơ chế recoil ngẫu nhiên. Việc sửa lỗi ADS base và đường recoil quan sát được giúp giải quyết sai khác cụ thể, không biến những phần chưa biết thành dữ liệu gốc.</p>
+</article></main></body></html>

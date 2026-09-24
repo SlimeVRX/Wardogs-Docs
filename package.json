@@ -1,0 +1,12 @@
+{
+  "name": "wardogs-docs",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Vietnamese gun gameplay handbook and WardogsAssetLab research reports",
+  "scripts": {
+    "sync": "node scripts/sync-from-lab.mjs",
+    "build": "node scripts/build.mjs"
+  },
+  "engines": { "node": ">=20" }
+}

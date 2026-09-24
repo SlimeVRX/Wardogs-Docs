@@ -1,0 +1,1351 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="description" content="Báo cáo hiệu chỉnh AK74, nền tảng Gun Gameplay và quy trình tái tạo cảm giác bắn từng khẩu."><title>Hiểu và tái tạo cảm giác bắn · Wardogs Docs</title><link rel="stylesheet" href="assets/styles.css"></head><body><header class="masthead"><div class="brand">WARDOGS DOCS<span>Cẩm nang Gun Gameplay · tiếng Việt · 24.09.2026</span></div><div class="actions"><a href="index.html">Cẩm nang</a><a href="references.html">Báo cáo & bằng chứng</a><a href="https://github.com/SlimeVRX/Wardogs-Docs">GitHub ↗</a><button class="print" onclick="window.print()">In / lưu PDF</button></div></header><a class="skip" href="#start">Đến nội dung</a><div class="layout"><nav aria-label="Mục lục"><p class="nav-title">LỘ TRÌNH ĐỌC</p><div class="nav-group"><a class="chapter-link" href="#start"><span class="number">00</span><span>Bắt đầu<small>Cách đọc và kết quả hiện tại</small></span></a><details><summary>Chủ đề trong chương</summary><ul><li><a href="#start-doc-theo-cau-hoi-cua-ban">Đọc theo câu hỏi của bạn</a></li><li><a href="#start-ak74-hien-da-dat-gi">AK74 hiện đã đạt gì?</a></li><li><a href="#start-xem-va-choi-lai-bang-chung">Xem và chơi lại bằng chứng</a></li><li><a href="#start-tu-kien-thuc-toi-source-hien-tai">Từ kiến thức tới source hiện tại</a></li><li><a href="#start-cach-dung-bo-tai-lieu">Cách dùng bộ tài liệu</a></li></ul></details></div><div class="nav-group"><a class="chapter-link" href="#case-study"><span class="number">01</span><span>Lịch sử AK74<small>Nguyên nhân → sửa → kiểm chứng</small></span></a><details><summary>Chủ đề trong chương</summary><ul><li><a href="#case-study-1-tu-tai-nguyen-roi-den-mot-khau-sung-co-the-kiem-tra">1. Từ tài nguyên rời đến một khẩu súng có thể kiểm tra</a></li><li><a href="#case-study-2-sua-cach-chay-animation-truoc-khi-chinh-do-giat">2. Sửa cách chạy animation trước khi chỉnh “độ giật”</a></li><li><a href="#case-study-3-thu-hep-ve-ak74-tim-ra-loi-nen-ads">3. Thu hẹp về AK74: tìm ra lỗi nền ADS</a></li><li><a href="#case-study-4-tach-camera-sung-va-phan-ung-voi-chuot">4. Tách camera, súng và phản ứng với chuột</a></li><li><a href="#case-study-5-am-thanh-cung-can-dieu-tra-rieng">5. Âm thanh cũng cần điều tra riêng</a></li><li><a href="#case-study-6-ban-chap-nhan-ads-nhung-hip-giu-co-van-rung-doi-cau-hoi-do">6. Bạn chấp nhận ADS nhưng HIP giữ cò vẫn rung: đổi câu hỏi đo</a></li><li><a href="#case-study-7-nhung-gia-thuyet-da-thu-va-loai-bo">7. Những giả thuyết đã thử và loại bỏ</a></li><li><a href="#case-study-8-ket-qua-gioi-han-va-lan-dua-vao-editor">8. Kết quả, giới hạn và lần đưa vào Editor</a></li></ul></details></div><div class="nav-group"><a class="chapter-link" href="#foundations"><span class="number">02</span><span>Nền tảng Gun Gameplay<small>22 chủ đề, từ input tới mục tiêu</small></span></a><details><summary>Chủ đề trong chương</summary><ul><li><a href="#foundations-1-gunplay-gunfeel-va-ly-do-muon-ban-them-mot-lan">1. Gunplay, gunfeel và lý do muốn bắn thêm một lần</a></li><li><a href="#foundations-2-chuoi-nguyen-nhan-cua-mot-phat-ban">2. Chuỗi nguyên nhân của một phát bắn</a></li><li><a href="#foundations-3-bon-huong-khac-nhau-thuong-bi-goi-chung-la-tam-sung">3. Bốn hướng khác nhau thường bị gọi chung là “tâm súng”</a></li><li><a href="#foundations-4-nhip-ban-do-tre-input-va-thu-tu-cap-nhat">4. Nhịp bắn, độ trễ input và thứ tự cập nhật</a></li><li><a href="#foundations-5-camera-recoil-camera-shake-va-viewmodel-recoil">5. Camera recoil, camera shake và viewmodel recoil</a></li><li><a href="#foundations-6-projection-fov-va-vi-sao-cung-mot-animation-van-nhin-khac">6. Projection, FOV và vì sao cùng một animation vẫn nhìn khác</a></li><li><a href="#foundations-7-pose-additive-layer-va-he-toa-do">7. Pose, additive, layer và hệ tọa độ</a></li><li><a href="#foundations-8-rig-tay-rig-sung-socket-ik-va-co-khi">8. Rig tay, rig súng, socket, IK và cơ khí</a></li><li><a href="#foundations-9-lien-thanh-overlap-reset-hoi-va-vien-cuoi">9. Liên thanh: overlap, reset, hồi và viên cuối</a></li><li><a href="#foundations-10-ads-va-handling-la-mot-qua-trinh">10. ADS và handling là một quá trình</a></li><li><a href="#foundations-11-locomotion-sway-bob-inertia-va-trang-thai-co-the">11. Locomotion, sway, bob, inertia và trạng thái cơ thể</a></li><li><a href="#foundations-12-spread-bloom-va-accuracy-khac-recoil">12. Spread, bloom và accuracy khác recoil</a></li><li><a href="#foundations-13-hitscan-projectile-sight-muzzle-va-ban-sat-vat-can">13. Hitscan, projectile, sight–muzzle và bắn sát vật cản</a></li><li><a href="#foundations-14-damage-giap-ttk-va-cam-giac-dan-co-luc">14. Damage, giáp, TTK và cảm giác “đạn có lực”</a></li><li><a href="#foundations-15-reload-chamber-physical-magazines-va-ngat-action">15. Reload, chamber, physical magazines và ngắt action</a></li><li><a href="#foundations-16-am-thanh-luc-vat-lieu-nhip-va-khong-gian">16. Âm thanh: lực, vật liệu, nhịp và không gian</a></li><li><a href="#foundations-17-muzzle-flash-smoke-vo-dan-tracer-va-anh-sang">17. Muzzle flash, smoke, vỏ đạn, tracer và ánh sáng</a></li><li><a href="#foundations-18-hit-feedback-doi-tuong-nhan-dan-va-ui">18. Hit feedback, đối tượng nhận đạn và UI</a></li><li><a href="#foundations-19-hieu-nang-frame-pacing-thiet-bi-va-kha-nang-tuy-chinh">19. Hiệu năng, frame pacing, thiết bị và khả năng tùy chỉnh</a></li><li><a href="#foundations-20-multiplayer-la-mot-tang-rieng">20. Multiplayer là một tầng riêng</a></li><li><a href="#foundations-21-do-dung-thu-can-do">21. Đo đúng thứ cần đo</a></li><li><a href="#foundations-22-lo-trinh-hoc-bang-cach-lam-va-nhung-dieu-nen-nho">22. Lộ trình học bằng cách làm và những điều nên nhớ</a></li></ul></details></div><div class="nav-group"><a class="chapter-link" href="#workflow"><span class="number">03</span><span>Quy trình cho khẩu tiếp theo<small>11 bước và các cổng nghiệm thu</small></span></a><details><summary>Chủ đề trong chương</summary><ul><li><a href="#workflow-1-chot-doi-tuong-se-sao-chep">1. Chốt đối tượng sẽ sao chép</a></li><li><a href="#workflow-2-lap-bang-bang-chung-truoc-khi-viet-code">2. Lập bảng bằng chứng trước khi viết code</a></li><li><a href="#workflow-3-dung-dung-tai-nguyen-va-he-toa-do">3. Dựng đúng tài nguyên và hệ tọa độ</a></li><li><a href="#workflow-4-khoa-may-quay-truoc-khi-chinh-recoil">4. Khóa máy quay trước khi chỉnh recoil</a></li><li><a href="#workflow-5-sua-lich-ban-va-trang-thai-truoc-khi-sua-hinh">5. Sửa lịch bắn và trạng thái trước khi sửa hình</a></li><li><a href="#workflow-6-ghi-baseline-gameplay-that">6. Ghi baseline gameplay thật</a></li><li><a href="#workflow-7-tach-va-do-cac-chuyen-dong">7. Tách và đo các chuyển động</a></li><li><a href="#workflow-8-hieu-chinh-tung-lop-co-doi-chung">8. Hiệu chỉnh từng lớp có đối chứng</a></li><li><a href="#workflow-9-hoan-thien-nhung-phan-ngoai-recoil">9. Hoàn thiện những phần ngoài recoil</a></li><li><a href="#workflow-10-mo-rong-theo-dac-tinh-tung-khau">10. Mở rộng theo đặc tính từng khẩu</a></li><li><a href="#workflow-11-nghiem-thu-va-dong-goi">11. Nghiệm thu và đóng gói</a></li></ul></details></div><div class="nav-group"><a class="chapter-link" href="#worksheet"><span class="number">04</span><span>Phiếu công việc<small>Sao chép để bắt đầu điều tra</small></span></a><details><summary>Chủ đề trong chương</summary><ul><li><a href="#worksheet-ho-so">Hồ sơ</a></li><li><a href="#worksheet-bang-chung">Bằng chứng</a></li><li><a href="#worksheet-asset-va-lap-rap">Asset và lắp ráp</a></li><li><a href="#worksheet-ca-tham-khao-va-input-tai-hien">Ca tham khảo và input tái hiện</a></li><li><a href="#worksheet-gia-thuyet-thu-nghiem-ket-luan">Giả thuyết → thử nghiệm → kết luận</a></li><li><a href="#worksheet-bang-do-truoc-sau">Bảng đo trước/sau</a></li><li><a href="#worksheet-hoi-quy-va-ban-giao">Hồi quy và bàn giao</a></li></ul></details></div><p class="nav-note">Ctrl + F để tìm trong tài liệu.<br><a href="references.html">11 báo cáo bổ trợ và bằng chứng</a></p></nav><main><article class="chapter" id="start" aria-labelledby="start-title"><div class="chapter-kicker">CHƯƠNG 00 <span>·</span> <a href="content/handbook/00-Readme.vi.md">Bản Markdown ↗</a></div><h1 id="start-title">Hiểu và tái tạo cảm giác bắn</h1>
+<p><strong>Báo cáo AK74 và cẩm nang thực hành Gun Gameplay · 24/09/2026</strong></p>
+<p>Người thực hiện dự án đã chơi thử và chấp nhận HIP/ADS của AK74. Bộ tài liệu này giải thích vì sao những lần dựng trước chưa đạt, chúng tôi đã đo và sửa gì, và cách dùng kinh nghiệm ấy cho khẩu tiếp theo. Nó cũng mở rộng từ chuyển động súng sang toàn bộ chuỗi input, mô phỏng, animation, âm thanh, VFX, mục tiêu và UI.</p>
+<p><strong>Bài học chính:</strong> có đúng asset chưa đủ. Cảm giác đến từ cách ghép asset trên đúng nền, đúng thời điểm, đúng hệ tọa độ; các phản hồi phải cùng diễn tả một hành động của người chơi. Sửa AK74 thành công hơn khi chúng tôi biến lời nhận xét “đầu súng rung quá nhiều” thành phép đo cụ thể, thay vì tiếp tục tăng/giảm một hệ số recoil chung.</p>
+<h2 id="start-doc-theo-cau-hoi-cua-ban">Đọc theo câu hỏi của bạn</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Bạn muốn hiểu</th>
+<th>Chương nên đọc</th>
+<th>Sau khi đọc, bạn làm được gì?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Đã làm gì để AK74 đạt tới hiện tại?</td>
+<td><a href="#case-study">01 · Toàn bộ quá trình hiệu chỉnh AK74</a></td>
+<td>Theo được nguyên nhân → phép đo → bản sửa → kiểm chứng, cả những giả thuyết bị loại.</td>
+</tr>
+<tr>
+<td>Ngoài recoil và shake còn những gì?</td>
+<td><a href="#foundations">02 · Nền tảng Gun Gameplay</a></td>
+<td>Phân biệt 22 nhóm kiến thức, biết lớp nào gây ra cảm giác và dùng bằng chứng nào để kiểm.</td>
+</tr>
+<tr>
+<td>Làm tiếp một khẩu khác thế nào?</td>
+<td><a href="#workflow">03 · Quy trình tái tạo từng khẩu</a></td>
+<td>Đi qua 11 bước với đầu ra và điều kiện nghiệm thu rõ ràng.</td>
+</tr>
+<tr>
+<td>Bắt đầu ghi chép và giao việc ở đâu?</td>
+<td><a href="#worksheet">04 · Phiếu công việc để sao chép</a></td>
+<td>Lập hồ sơ source, asset, timing, ca thử, phép đo và những phần chưa biết.</td>
+</tr>
+</tbody></table></div>
+<p>Nếu mới bắt đầu, đọc 01 trước để thấy một vấn đề thật. Sau đó dùng 02 như tài liệu tra cứu trong khi thực hiện 03 và điền 04. Không cần học thuộc mọi thuật ngữ trước khi làm bài thử đầu tiên.</p>
+<h2 id="start-ak74-hien-da-dat-gi">AK74 hiện đã đạt gì?</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Phần</th>
+<th>Kết quả được phép kết luận</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ADS</td>
+<td>Đã sửa ghép Fire trên sai base, quỹ đạo ADS, tick/proxy và các lớp chuyển động chồng lặp; bạn chơi thử thấy ổn.</td>
+</tr>
+<tr>
+<td>HIP liên thanh</td>
+<td>Đã giảm delta HIP xuống 0,45 và nối pose 60 ms cho dữ liệu hiện tại; đầu súng không còn nhảy mạnh như bản trước; bạn chơi thử thấy ổn.</td>
+</tr>
+<tr>
+<td>Kiểm chứng</td>
+<td>Có đối chiếu ảnh/telemetry trước–sau, hồi quy các ca bắn/chuyển ADS và kiểm PIE riêng cho level. Biên nhận từng build được phân biệt trong chương 01.</td>
+</tr>
+<tr>
+<td>Sai khác còn lại</td>
+<td>Quỹ đạo ngang chưa khớp hoàn toàn; audio mixer, VFX, locomotion và hit feedback chưa được xác nhận đạt mức tương đương video.</td>
+</tr>
+<tr>
+<td>Các khẩu khác</td>
+<td>Có 10 profile chơi được trong lab; chưa có vòng hiệu chỉnh sâu và nghiệm thu như AK74 cho 9 khẩu còn lại.</td>
+</tr>
+</tbody></table></div>
+<p><strong>Không gọi kết quả này là 1:1.</strong> “Bạn chơi thấy ổn”, “logic chạy đúng” và “các đại lượng đã đo gần video” là ba loại bằng chứng khác nhau. Bộ tài liệu giữ nguyên giới hạn ấy để bạn biết chính xác mình đang tiến bộ ở đâu.</p>
+<h2 id="start-xem-va-choi-lai-bang-chung">Xem và chơi lại bằng chứng</h2>
+<ul>
+<li><a href="references.html#local-d4583e0315c6">Mở level AK74 trong Editor (workspace)</a>: <code>/Game/WardogsLab/VideoGameplay/Maps/L_AK74_HIPTest</code>. Nhấn Play, click viewport, rồi Enter / DEPLOY LOADOUT. Chuột trái bắn HIP, chuột phải ADS, R reload; Shift+F1 trả chuột về Editor. Liên kết launcher có thể cần mở bằng Explorer tùy trình duyệt.</li>
+<li><a href="references.html#local-e3d92080dd81">Đối chiếu ADS/camera AK74 (workspace)</a> và <a href="references.html#local-cd2c97b9a0e6">đối chiếu HIP nguồn / trước / sau (workspace)</a>.</li>
+<li><a href="reports/AK74-HIP-Measurement-Readme.vi.html">Hồ sơ đo HIP và giới hạn tracking</a>.</li>
+<li><a href="content/evidence/AK74HipFocus-validation-summary.json">Receipt bản HIP</a> và <a href="content/evidence/AK74EditorLevel-validation.json">receipt level/PIE</a>.</li>
+</ul>
+<p>Đo video không tiết lộ toàn bộ input, FOV, native graph hoặc luật damage của người quay. Dữ liệu trong tài liệu luôn cần một nhãn: <strong>asset đọc được</strong>, <strong>đo được</strong>, <strong>nguồn cộng đồng</strong>, <strong>lựa chọn của lab</strong>, hoặc <strong>chưa biết</strong>.</p>
+<h2 id="start-tu-kien-thuc-toi-source-hien-tai">Từ kiến thức tới source hiện tại</h2>
+<p>Các file dưới đây là điểm bắt đầu điều tra, không phải chỉ cần đổi một số trong mỗi file là tái tạo được mọi khẩu.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Trách nhiệm</th>
+<th>Điểm đọc code/dữ liệu</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Luật bắn, đạn, spread và đường bắn</td>
+<td><a href="references.html#local-3e41113eb56a">WardogsWeaponComponent.cpp (workspace)</a>, <a href="references.html#local-c6fcf28bfce9">WardogsWeaponProfile.h (workspace)</a></td>
+</tr>
+<tr>
+<td>Trạng thái và trình diễn gameplay FP</td>
+<td><a href="references.html#local-0e8d18a5a3cf">WardogsVideoGameplay.cpp (workspace)</a></td>
+</tr>
+<tr>
+<td>Đánh giá pose và ghép animation</td>
+<td><a href="references.html#local-47f823871c25">WardogsGunStudyAnimInstance.cpp (workspace)</a></td>
+</tr>
+<tr>
+<td>Hệ số HIP đang được chấp nhận</td>
+<td><a href="content/evidence/AK74HipFire.json">AK74HipFire.json</a></td>
+</tr>
+<tr>
+<td>Calibration Showcase và nhận diện level test</td>
+<td><a href="references.html#local-b257b772a77e">WardogsShowcaseCalibration.cpp (workspace)</a></td>
+</tr>
+<tr>
+<td>HUD và widget gameplay</td>
+<td><a href="references.html#local-49332a347497">WardogsVideoWidget.cpp (workspace)</a></td>
+</tr>
+</tbody></table></div>
+<p>Bước tiếp theo hợp lý là giữ AK74 làm baseline, hoàn thiện một lớp còn thiếu bằng A/B có bằng chứng, hoặc chọn <strong>một</strong> khẩu tiếp theo và lập worksheet mới. Dùng lại phương pháp; không nhân bản các hệ số AK74 sang cả kho súng.</p>
+<h2 id="start-cach-dung-bo-tai-lieu">Cách dùng bộ tài liệu</h2>
+<p>Bản online có mục lục theo chương và theo chủ đề; có thể dùng tìm kiếm của trình duyệt và nút In / lưu PDF. Các chương Markdown, báo cáo bổ trợ và receipt được lưu trong repo. Liên kết có nhãn “workspace” dẫn tới danh mục file cần mở trên máy chứa WardogsAssetLab; website không khởi chạy Unreal hay cung cấp các video/capture và asset game đó. Sao chép phiếu 04 để làm việc với khẩu tiếp theo.</p>
+<p>Lượt này tổng hợp kiến thức và quy trình; không thay đổi gameplay đã được bạn chấp nhận. Những bài tập và hạng mục đề xuất trong cẩm nang là công việc tiếp theo, không phải tính năng vừa được triển khai.</p>
+<a class="next-chapter" href="#case-study">Đọc tiếp: Lịch sử AK74 <span>→</span></a></article><article class="chapter" id="case-study" aria-labelledby="case-study-title"><div class="chapter-kicker">CHƯƠNG 01 <span>·</span> <a href="content/handbook/01-AK74-Case-Study.vi.md">Bản Markdown ↗</a></div><h1 id="case-study-title">AK74: từ “đúng asset nhưng bắn rất lạ” đến bản HIP/ADS đã được chơi thử chấp nhận</h1>
+<p>Ngày tổng hợp: 24/09/2026. Người dùng đã thử <code>L_AK74_HIPTest</code> trong Editor và xác nhận <strong>HIP, ADS ổn</strong>. Đó là nghiệm thu cảm giác của bản hiện tại. Những phép đo dưới đây vẫn chỉ ra sai khác với video; sự chấp nhận này không biến bản dựng thành bản sao 1:1.</p>
+<p>Kết quả đến từ việc tách từng lớp, đo một lỗi cụ thể rồi kiểm lại. Không có một thông số recoil duy nhất giải quyết tất cả. Quan trọng hơn, chính cách kiểm tra ban đầu của tôi đã bỏ sót lỗi: xác nhận engine chạy đúng một clip không đồng nghĩa clip ấy được ghép đúng vào trạng thái người chơi.</p>
+<h2 id="case-study-1-tu-tai-nguyen-roi-den-mot-khau-sung-co-the-kiem-tra">1. Từ tài nguyên rời đến một khẩu súng có thể kiểm tra</h2>
+<p>Bộ mẫu đầu chỉ có geometry static của AK74, Vector và M249, animation tay và rig cơ khí chung. StaticMesh đi theo tay nhưng không tự làm bolt hoặc băng đạn chuyển động. Sau khi lần dữ liệu lắp ráp Mutable, dự án tạo các mesh có skin và skeleton riêng trong <code>GunStudy/RecoveredV3</code>, nối cặp animation <strong>tay</strong> và <strong>cơ khí</strong> của từng khẩu.</p>
+<p>Đây là bước giải quyết khả năng nhìn và sử dụng tài nguyên. Nó chưa phục hồi toàn bộ AnimGraph, shader, âm thanh hoặc quy tắc gameplay gốc. <a href="reports/GunGameplay-Integration-Audit.vi.html">Audit tích hợp lịch sử</a> và <a href="reports/VideoGunplay-CodeAudit.vi.html">kiến trúc GunStudy đã có rig</a> mô tả hai giai đoạn khác nhau; không dùng nhận xét “chỉ có static mesh” của giai đoạn đầu để mô tả trạng thái hiện tại.</p>
+<p>Từ đó, bản chơi thêm loadout, đạn, reload, ADS, sprint, HUD và các súng khác. Có đủ hành động chưa đảm bảo chúng diễn ra đúng thời điểm: một lỗi tick khiến đạn và recoil đã thay đổi nhưng tay/súng vẫn ở tuổi animation của phát trước. Thứ tự được sửa thành <strong>input → weapon → trình diễn súng → mesh</strong>, để cùng một phát đạn kích hoạt pose và ánh sáng đầu nòng trong cùng frame. <a href="reports/Showcase-Implementation.vi.html">Lịch sử Showcase</a> ghi capture 360 frame/81 phát kiểm chứng bước này.</p>
+<h2 id="case-study-2-sua-cach-chay-animation-truoc-khi-chinh-do-giat">2. Sửa cách chạy animation trước khi chỉnh “độ giật”</h2>
+<p>Đợt hiệu chỉnh rộng ngày 23/09 phát hiện nhiều lỗi chung:</p>
+<ul>
+<li>ADS chỉ giữ pose cuối rồi nội suy, bỏ quỹ đạo đưa súng lên ngắm. Bản sửa lấy mẫu các key thật của <code>ADS_In</code>.</li>
+<li>Action bị trộn với trọng số 0,4 → 0,8 → 1 ở ba frame đầu, làm mất lực của cú giật ban đầu. Clip bắn được nhận trọng số ngay khi bắt đầu.</li>
+<li>Hết action, runtime đổi sang hip idle khi weight còn lớn, gây cú hụt trong ADS. Bản sửa giữ sample cuối hoặc sample tại lúc ngắt cho đến hết fade.</li>
+<li>Proxy animation lấy dữ liệu trước <code>NativeUpdateAnimation</code>, trễ một frame. Bản sửa commit dữ liệu sau cập nhật và kiểm transform xương đã evaluate.</li>
+</ul>
+<p>Nhịp AK74 được chọn khoảng <strong>650 RPM</strong> theo âm thanh Showcase; ADS vào khoảng <strong>0,267 giây</strong>, world zoom khoảng <strong>1,28 lần</strong> theo hình nền. Đây là phép đo video có sai số, không phải giá trị vừa giải mã từ game. Tài liệu <a href="reports/Gunplay-Changes-20260923.vi.html">thay đổi ngày 23/09</a> giữ nguồn và phạm vi riêng của từng con số.</p>
+<p>Các kiểm tra khi đó chứng minh clock và pose chạy nhất quán. Tuy nhiên, bạn vẫn thấy cảm giác khác. Điều đó cho thấy tiêu chí kiểm tra phải đi xa hơn việc “clip đã phát đúng”.</p>
+<h2 id="case-study-3-thu-hep-ve-ak74-tim-ra-loi-nen-ads">3. Thu hẹp về AK74: tìm ra lỗi nền ADS</h2>
+<p>Khi bạn yêu cầu chỉ tập trung AK74, chúng tôi ngừng lấy việc nhiều khẩu đã hoạt động làm thước đo tiến bộ. Bốn ca được tách riêng: HIP một viên, HIP giữ cò, ADS một viên và ADS giữ cò.</p>
+<p>Nguồn <code>A_FP_AK74M_Standing_ADS_Fire</code> là animation additive; authored base đã bị lược trong cooked data. Exporter trước đó ghi rõ dùng <code>Idle(0)</code> thay thế để bake thành full pose. Runtime lấy full pose ấy đè lên ADS. Vì vậy tên clip có chữ ADS nhưng nền được mang vào lại là hip.</p>
+<p>Từ cuối <code>ADS_In</code> sang đầu <code>AimFire</code>, xương <code>weapon_r</code> lệch <strong>6,13355 cm và 1,4491°</strong>; hình súng nhảy ngang khoảng 190 pixel quy về 1080p. Giảm camera pitch không thể sửa việc đặt sai nền này.</p>
+<p>Cách sửa: với mỗi xương, tách delta của action khỏi đúng Idle đã dùng khi bake, rồi cộng delta lên <strong>pose locomotion/ADS hiện tại</strong>, bằng <code>MakeDynamicAdditive</code> và <code>ApplyAdditive</code>. Reload/equip vẫn có đường full pose riêng. Đây là phép sửa cách dùng dữ liệu đã nhập, không phải tuyên bố đã phục hồi graph native. <a href="reports/AK74-MechanismAudit-20260924.vi.html">Audit base pose</a> lưu phép tính và giới hạn.</p>
+<p><strong>Sai lầm của quy trình trước:</strong> oracle chỉ hỏi “xương có khớp clip không?”. Nó chưa hỏi “clip đang được đặt lên nền nào?”. Một phép kiểm đúng nhưng thiếu câu hỏi quan trọng vẫn cho PASS trong khi người chơi thấy sai rõ ràng.</p>
+<h2 id="case-study-4-tach-camera-sung-va-phan-ung-voi-chuot">4. Tách camera, súng và phản ứng với chuột</h2>
+<p>Sau sửa pose, ba lớp còn bị cộng lẫn:</p>
+<ol>
+<li>Animation nguồn đã có tay/súng giật; procedural mesh kick lại đẩy cả cụm thêm một lần. AK74 bỏ kick thêm này.</li>
+<li>Sway đọc toàn bộ thay đổi control rotation, nên recoil tự tạo sway như thể người chơi quay chuột. Bản sửa tách phần recoil khỏi input dùng cho sway.</li>
+<li>Camera bị tăng pitch tức thời rồi tự kéo về sau 120 ms. Video cho thấy nền tăng dần khoảng 100 ms và phần lớn độ nâng được giữ lại.</li>
+</ol>
+<p>Để đo camera, theo dõi các landmark <strong>cảnh nền</strong>, loại HUD và súng. Để đo viewmodel, theo dõi <strong>thước ngắm/thân súng</strong> riêng. Không đổi chuyển động xương thành góc camera hoặc góc bay của đạn.</p>
+<p>Ở 500 ms sau một viên, nguồn còn khoảng 91,5% mức tăng đỉnh HIP và 97,1% ADS; bản cũ còn 5,77%. Runtime chuyển sang curve quan sát được và phần nâng giữ lại. Khi giữ cò, cộng đơn giản các curve một viên vẫn thiếu độ nâng; một gain tích lũy có giới hạn được fit chung từ hai chuỗi HIP/ADS. Điều kiện reset và giới hạn gain là lựa chọn của lab.</p>
+<p>Trên PNG thật, sai lệch chuyển động <strong>dọc của cảnh</strong> trong giây đầu auto giảm từ khoảng 49–59 pixel xuống <strong>5,15 pixel HIP / 5,20 pixel ADS RMS</strong>. Đây là một chỉ số hẹp: FOV nguồn và input ghìm chuột chưa biết; yaw, flash, vật liệu và toàn ảnh chưa trùng. <a href="reports/AK74-VideoAnalysis-20260924.vi.html">Phân tích video</a> ghi các giả định đó.</p>
+<h2 id="case-study-5-am-thanh-cung-can-dieu-tra-rieng">5. Âm thanh cũng cần điều tra riêng</h2>
+<p>Bản cũ lặp <code>Core_01</code> cho mỗi viên và phát từ muzzle di chuyển. Đối chiếu waveform cho thấy video có nhiều biến thể core. Đã xuất 35 SoundWave của AK74: 10 Core, 5 Punch, 10 Mech, 9 Rattle và 1 FinalBullet.</p>
+<p>Runtime hiện preload 10 core, chọn biến thể không lặp liền nhau, dùng random stream riêng và phát stereo local. Punch có bằng chứng bổ sung lực trầm, nhưng mixer MetaSound chưa đọc đầy đủ nên <strong>chưa ghép Punch/Mech/Rattle vào runtime</strong>. Các bản nghe fit offline không phải âm thanh gameplay đã triển khai.</p>
+<p>Capture hình chạy <code>-nosound</code>. Số request bằng số viên chỉ kiểm luồng gọi, không chứng minh đồng bộ âm thanh đến từng sample. <a href="reports/AK74-AudioAudit-20260924.vi.html">Audit âm thanh</a> phân biệt rõ xuất asset, fit offline và phần đang phát thật.</p>
+<h2 id="case-study-6-ban-chap-nhan-ads-nhung-hip-giu-co-van-rung-doi-cau-hoi-do">6. Bạn chấp nhận ADS nhưng HIP giữ cò vẫn rung: đổi câu hỏi đo</h2>
+<p>Phản hồi của bạn là đầu súng văng nhiều, khó mô tả. Điều cần làm không phải yêu cầu bạn nói bằng thuật ngữ kỹ thuật, mà biến cảm giác ấy thành phép đo: đầu ruồi đi đâu, thân súng đi đâu, và bước nhảy nào xuất hiện khi phát mới bắt đầu?</p>
+<p>AK74 650 RPM bắn mỗi <strong>92,3077 ms</strong>. Trong source HIP, súng vẫn lùi khoảng 3,79 cm khi viên tiếp theo đến; khoảng 150–200 ms mới gần idle. Runtime reset clip về đầu mỗi viên, cắt phần hồi đang dang dở. Capture ghi bước nhảy xương 1,99–3,74 cm và khoảng 2,10° tại retrigger.</p>
+<p>Trên ảnh, bước nhảy đầu ruồi lớn nhất là <strong>21,62 pixel</strong>, nguồn <strong>7,90</strong>; thân súng <strong>38,72</strong>, nguồn <strong>15,35</strong>. Camera đã khá gần nhưng chính cây súng còn sai. Đây là lý do tiếp tục giảm camera recoil sẽ sửa nhầm lớp.</p>
+<p>Bốn ứng viên so trọng số 0,45/0,55 và handoff 0/40/60 ms. Bản chọn dùng <strong>45% delta HIP và nối pose trong 60 ms</strong>. Phát đầu chạy ngay; phát kế tiếp lấy pose cũ tại đúng deadline rồi chuyển sang pose mới bằng smoothstep. Nhịp đạn, cơ khí và camera không bị làm chậm để che rung.</p>
+<p>Hiệu chỉnh theo clip của phát đã bắn: một phát bắt đầu HIP giữ calibration ấy khi người chơi đưa lên ADS; phát tiếp theo chọn clip theo tư thế mới. Điều này tránh đổi weight đột ngột giữa một action. Thông số cuối nằm trong <a href="content/evidence/AK74HipFire.json">AK74HipFire.json</a>.</p>
+<h2 id="case-study-7-nhung-gia-thuyet-da-thu-va-loai-bo">7. Những giả thuyết đã thử và loại bỏ</h2>
+<p>Giảm riêng rotation quanh <code>weapon_r</code> cải thiện đầu ruồi tốt nhất chỉ khoảng 0,42 pixel nhưng làm thân súng sai hơn khoảng 2 pixel. Cải thiện nhỏ hơn độ bất định quan sát; bản cuối giữ <strong>rotationScale = 1</strong>, tức không áp sửa rotation.</p>
+<p>Giả thuyết inverse CameraBone cũng không giải thích được lỗi: ở 33,3 ms, góc tương đối của súng tăng từ 2,839° lên 3,602° và hướng bù đẩy thước ngắm sai phía. Không thêm phép bù ấy.</p>
+<p>Montage nguồn có blend-in 0 và blend-out 0,4 giây, nhưng điều đó không chứng minh native chồng mọi phát trong 0,4 giây. Handoff 60 ms là <strong>calibration của lab</strong>, không gắn nhãn “thông số gốc”. <a href="reports/AK74-HIP-Mechanisms-20260924.vi.html">Ghi chú cơ chế HIP</a> giữ các phương án bị loại để tránh thử lại cùng giả thuyết mà không có dữ liệu mới.</p>
+<h2 id="case-study-8-ket-qua-gioi-han-va-lan-dua-vao-editor">8. Kết quả, giới hạn và lần đưa vào Editor</h2>
+<p>So 61 frame từ phát đầu nhìn thấy tại 416,200 giây, không tối ưu lệch pha để làm số đẹp:</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Đại lượng, pixel quy về 1080p</th>
+<th align="right">Trước</th>
+<th align="right">Sau</th>
+<th align="right">Nguồn</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RMS quỹ đạo đầu ruồi so nguồn</td>
+<td align="right">14,93</td>
+<td align="right">8,98</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td>RMS quỹ đạo thân súng so nguồn</td>
+<td align="right">15,95</td>
+<td align="right">6,99</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td>Bước đầu ruồi lớn nhất giữa hai frame</td>
+<td align="right">21,62</td>
+<td align="right">4,09</td>
+<td align="right">7,90</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ít rung hơn không tự có nghĩa giống hơn.</strong> Bản mới vẫn thiếu chuyển động ngang: trung bình đầu ruồi nguồn khoảng +9,02 pixel, lab khoảng +0,4 trong đoạn đã đo. Đầu ruồi runtime nhỏ, chỉ khoảng 12 pixel native; track cuối dùng template độc lập từng frame để tránh drift optical flow. <a href="reports/AK74-HIP-Measurement-Readme.vi.html">Hồ sơ phép đo</a> ghi uncertainty và bảng ứng viên.</p>
+<p>Các biên nhận phải được hiểu theo đúng build:</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Giai đoạn</th>
+<th>Bằng chứng đã lưu</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Sửa ADS/camera/audio</td>
+<td><a href="content/evidence/AK74Focus-validation-summary.json">AK74Focus</a>: 29 rule tests, 539 kiểm tra gameplay, 648 frame/sáu ca.</td>
+</tr>
+<tr>
+<td>Sửa HIP cuối</td>
+<td><a href="content/evidence/AK74HipFocus-validation-summary.json">AK74HipFocus</a>: 30 rule tests, 539 kiểm tra gameplay, 1.026 frame/tám ca, gồm hết 30 viên. Hai ca bắt đầu ADS trùng telemetry pose/controller/clock của bản ADS trước.</td>
+</tr>
+<tr>
+<td>Level Editor</td>
+<td><a href="content/evidence/AK74EditorLevel-validation.json">AK74EditorLevel</a>: 26 kiểm tra đạt trên PIE thật, không cần cờ Showcase; deploy, chín phát HIP, bảo toàn đạn, reload và một phát ADS.</td>
+</tr>
+</tbody></table></div>
+<p>Receipt HIP gắn với DLL hash bắt đầu <code>7BD43D25</code>; DLL hiện tại sau công việc hỗ trợ level bắt đầu <code>4CCC587D</code>. Không suy rằng toàn bộ 1.026 frame đã chạy lại dưới DLL mới. Level có kiểm tra PIE riêng và sau đó có xác nhận chơi thử của bạn. Hai loại bằng chứng bổ sung cho nhau nhưng không thay thế nhau.</p>
+<p>Level <code>/Game/WardogsLab/VideoGameplay/Maps/L_AK74_HIPTest</code> đã lưu cấu hình Showcase, iron sight và 650 RPM. Bạn có thể mở bằng <a href="references.html#local-d4583e0315c6">Open-AK74HIP-Editor.cmd (workspace)</a>. <a href="references.html#local-cd2c97b9a0e6">Đối chiếu HIP (workspace)</a> giữ nguồn/trước/sau để xem lại.</p>
+<p>Điều học được từ toàn bộ quá trình là: <strong>asset đúng → ghép đúng → sự kiện đúng thời điểm → hình/âm đúng → người chơi chấp nhận</strong> là các bước riêng. Các súng tiếp theo phải đi qua cùng chuỗi bằng chứng, với thông số và đặc tính riêng; không sao chép 45%/60 ms của AK74 sang mọi khẩu.</p>
+<a class="next-chapter" href="#foundations">Đọc tiếp: Nền tảng Gun Gameplay <span>→</span></a></article><article class="chapter" id="foundations" aria-labelledby="foundations-title"><div class="chapter-kicker">CHƯƠNG 02 <span>·</span> <a href="content/handbook/02-Gunplay-Foundations.vi.md">Bản Markdown ↗</a></div><h1 id="foundations-title">Nền tảng Gun Gameplay: từ quyết định của người chơi đến cảm giác trên màn hình</h1>
+<p>Tài liệu này là khung kiến thức để bạn tự phân tích, làm và kiểm tra một hệ thống súng. Những phần ghi <strong>đề xuất</strong> là hướng thiết kế hoặc bài tập, không phải chức năng vừa được bổ sung vào WardogsAssetLab. Các cơ chế giải thích dưới đây cũng không mặc nhiên là cơ chế gốc của WARDOGS.</p>
+<p>Bạn làm tốt logic là một lợi thế: cảm giác bắn có thể được chia thành những quan hệ, đồng hồ, trạng thái và tín hiệu kiểm chứng được. Phần art không chỉ là chọn mesh đẹp. Nó là cách làm cho người chơi nhìn, nghe và hiểu cùng một sự kiện gameplay vào đúng thời điểm.</p>
+<h2 id="foundations-1-gunplay-gunfeel-va-ly-do-muon-ban-them-mot-lan">1. Gunplay, gunfeel và lý do muốn bắn thêm một lần</h2>
+<p><strong>Gunplay</strong> là toàn bộ hoạt động chiến đấu bằng súng: phát hiện mục tiêu, chọn vị trí, ngắm, bắn, di chuyển, thay đạn, chọn súng và sử dụng lợi thế của nó. <strong>Gunfeel</strong> là cảm giác khi điều khiển các hoạt động ấy: nhanh hay chậm, chắc hay lỏng, dễ đoán hay hỗn loạn, có sức nặng hay nhẹ bẫng. Một animation bắn đẹp chỉ đóng góp vào một phần của hệ thống.</p>
+<p>Đề xuất bốn tiêu chí để đánh giá thiết kế của bạn:</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Người chơi cần cảm nhận được</th>
+<th>Ví dụ kiểm tra</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Chủ động</td>
+<td>Tôi làm X thì game phản hồi X</td>
+<td>Nhấn bắn có phát bắn ngay khi luật cho phép; không bị animation nuốt input vô cớ.</td>
+</tr>
+<tr>
+<td>Hiểu được</td>
+<td>Tôi biết vì sao trúng, trượt hoặc chưa bắn được</td>
+<td>Hết đạn khác đang nạp, trúng giáp khác trúng thịt.</td>
+</tr>
+<tr>
+<td>Học được</td>
+<td>Tôi tiến bộ khi hiểu nhịp và luyện thao tác</td>
+<td>Biết ngắt burst, ghìm tâm, chọn thời điểm reload có ích.</td>
+</tr>
+<tr>
+<td>Có lựa chọn</td>
+<td>Khẩu súng này có lý do để tồn tại</td>
+<td>Súng nhanh, nhẹ đổi lấy gì; súng chậm, mạnh đem lại gì?</td>
+</tr>
+</tbody></table></div>
+<p>Một khẩu súng không cần rung mạnh để có sức nặng. Âm thanh có lực, thời gian đưa lên ngắm hợp lý, cú trúng rõ và nhịp hồi nhất quán có thể tạo cảm giác nặng ngay cả với chuyển động nhỏ. Ngược lại, rung nhiều có thể làm người chơi mất khả năng đọc mục tiêu và thấy mình không kiểm soát được.</p>
+<h2 id="foundations-2-chuoi-nguyen-nhan-cua-mot-phat-ban">2. Chuỗi nguyên nhân của một phát bắn</h2>
+<pre><code class="language-text">Input của người chơi
+  → kiểm tra trạng thái: được bắn chưa, có đạn không, mode nào?
+  → tạo sự kiện phát bắn: ID, thời gian, hướng ngắm, seed
+  ├→ mô phỏng đạn → va chạm → damage/giáp → kết quả
+  ├→ animation tay và cơ khí súng
+  ├→ recoil ảnh hưởng điều khiển / chuyển động trình bày
+  ├→ âm thanh, flash, khói, vỏ đạn
+  └→ HUD và phản hồi có liên quan
+Kết quả được xác nhận → hit feedback → người chơi quyết định tiếp
+</code></pre>
+<p>Đây là <strong>kiến trúc đề xuất</strong>, không phải một class sự kiện đã tồn tại đầy đủ trong lab. Điểm quan trọng là các nhánh phải nói về cùng một phát bắn. Không để animation tự sinh một viên, timer tự sinh thêm một viên, còn sound chạy theo một timer thứ ba.</p>
+<p>Một sự kiện shot nên có ít nhất: súng nào, chỉ số phát, thời điểm theo simulation, mode HIP/ADS lúc bắn, origin/hướng ngắm gameplay và seed nếu có random. Nhánh hình ảnh có thể đánh giá pose theo tuổi của shot; nhánh damage không phải đợi muzzle flash render xong mới quyết định viên đạn có tồn tại.</p>
+<p>Không nhất thiết mọi tín hiệu đều có độ trễ bằng 0. Một hoạt ảnh cò/búa có thể có bước chuẩn bị có chủ ý. Điều cần thiết là xác định rõ <strong>mốc discharge</strong> và đo các độ trễ so với mốc ấy, thay vì để chúng xuất hiện ngẫu nhiên do thứ tự tick.</p>
+<h2 id="foundations-3-bon-huong-khac-nhau-thuong-bi-goi-chung-la-tam-sung">3. Bốn hướng khác nhau thường bị gọi chung là “tâm súng”</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Đại lượng</th>
+<th>Là gì?</th>
+<th>Sai lầm thường gặp</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Hướng người chơi muốn ngắm</td>
+<td>Input chuột/controller đã qua mapping</td>
+<td>Đọc thay đổi góc do recoil như input chuột rồi tạo thêm sway.</td>
+</tr>
+<tr>
+<td>Hướng ngắm dùng cho gameplay</td>
+<td>Hướng trước khi lấy mẫu spread; có thể chứa aim recoil</td>
+<td>Dùng camera đã rung trang trí mà không chủ ý, khiến đạn rung theo.</td>
+</tr>
+<tr>
+<td>Hướng nhìn đang render</td>
+<td>Camera/FOV và các lớp trình bày cuối cùng</td>
+<td>Cho rằng mọi rung hình ảnh đều phải đổi hướng đạn.</td>
+</tr>
+<tr>
+<td>Trục mesh/muzzle đang render</td>
+<td>Hướng nòng trong bộ tay–súng</td>
+<td>Đồng nhất mesh với đường đạn dù viewmodel dùng projection riêng.</td>
+</tr>
+</tbody></table></div>
+<p>Bạn phải viết một “hợp đồng”: lớp nào được phép đổi hướng đạn, lớp nào chỉ biểu diễn cảm giác. Không có quy tắc mọi game phải giống nhau. Chẳng hạn, có game cho sway làm lệch hướng ngắm thật; game khác chỉ cho tay lắc trong một giới hạn. HUD, animation và hit phải nhất quán với lựa chọn đó.</p>
+<p>Lab đã có đường <code>GetUnshakenWeaponAimView</code> để phân biệt aim và presentation. Điều đó <strong>không</strong> tự chứng minh mọi camera effect trong toàn dự án đã độc lập khỏi aim. Khi thêm effect, kiểm tra đường lấy hướng thực ở <a href="references.html#local-3e41113eb56a">WardogsWeaponComponent.cpp (workspace)</a>.</p>
+<h2 id="foundations-4-nhip-ban-do-tre-input-va-thu-tu-cap-nhat">4. Nhịp bắn, độ trễ input và thứ tự cập nhật</h2>
+<p>Nhịp theo RPM được đổi sang giây bằng <code>T = 60 / RPM</code>. AK74 đang dùng 650 RPM, nên <code>T ≈ 0,09231 s</code>. Ở 60 FPS, một frame dài khoảng 16,67 ms; một chu kỳ AK74 dài 5,538 frame. Do đó không thể ép mọi phát cách nhau đúng 5 hay đúng 6 frame mà vẫn giữ nhịp trung bình.</p>
+<p>Đề xuất scheduler giữ deadline theo thời gian, không lấy số frame làm đơn vị:</p>
+<pre><code class="language-text">Nếu được bắn:
+    dispatch shot đến hạn trong tick hiện tại
+    lưu deadline và actual dispatch time riêng
+    deadline kế tiếp += khoảng cách giữa hai phát
+Khi render hiện tại:
+    tuổi shot = thời gian hiện tại - deadline của shot
+    sample animation/effect tại tuổi đó
+</code></pre>
+<p>Đây là sơ đồ khái niệm, cần bổ sung luật semi/burst, hết đạn và giới hạn xử lý khi hitch. Lấy tuổi animation từ deadline không tự rewind projectile/collision về thời điểm quá khứ; projectile vẫn cần chính sách mô phỏng riêng. Không dùng vòng catch-up vô hạn để phát hàng trăm shot trong một tick bị treo. Với multiplayer, deadline và bù trễ còn phải tuân theo quyền quyết định của server.</p>
+<p><strong>Độ trễ có nhiều đoạn:</strong> thiết bị → input game → simulation → render → màn hình; audio còn có buffer và output riêng. Video quay màn hình không cho biết chính xác lúc người quay nhấn nút. Vì vậy so frame flash chỉ đo được phản hồi nhìn thấy, không đo đầy đủ input latency.</p>
+<p>Trong lab trước đây, weapon cập nhật sau phần trình bày, khiến đạn đã bắn nhưng pose vẫn thuộc phát trước. Một frame trễ ở 60 FPS đủ nhìn thấy khi chu kỳ chỉ có vài frame. Chốt thứ tự input → luật bắn → đánh giá pose/effect → render trước khi tinh chỉnh đường cong thẩm mỹ.</p>
+<h2 id="foundations-5-camera-recoil-camera-shake-va-viewmodel-recoil">5. Camera recoil, camera shake và viewmodel recoil</h2>
+<p><strong>Aim recoil</strong> làm thay đổi hướng ngắm gameplay; người chơi có thể phải ghìm. <strong>Camera shake</strong> thêm chuyển động cảm giác: rung nhỏ, va chạm, dao động hoặc xung. <strong>Viewmodel recoil</strong> là tay và súng giật trong màn hình. Chúng có thể được liên kết, nhưng không nên vô tình cộng ba lần cùng một ý đồ.</p>
+<p>Ví dụ về một shot: input giữ yên; hướng ngắm nâng một chút; thân súng lùi rồi hồi; một rung camera ngắn kết thúc. Bạn cần biết sau 0,5 giây, hướng ngắm còn nâng bao nhiêu và mesh còn lệch bao nhiêu. Nếu cứ kéo camera về điểm cũ, bạn đã thiết kế một hành vi khác với trường hợp nó giữ góc nâng cuối. Nếu kéo về tuyệt đối, còn có thể xóa cả thao tác ghìm của người chơi.</p>
+<p>Trong UE, CameraShake có thể tác động translation, rotation, FOV và có chế độ một instance hoặc chồng nhiều instance. Việc restart thay vì chồng shake cũng làm cảm giác liên thanh thay đổi. Đọc thiết lập thay vì mặc định “Play Shake mỗi viên là xong”. <a href="https://dev.epicgames.com/documentation/unreal-engine/camera-shakes-in-unreal-engine" target="_blank" rel="noopener noreferrer">Epic: Camera Shakes</a>.</p>
+<p>Một mô hình spring là công cụ tạo chuyển động, không phải đáp án mặc định. Hệ <code>x&#39;&#39; + 2ζωx&#39; + ω²x = impulse</code> cho phép điều khiển tốc độ và độ dao động hồi: <code>ζ</code> nhỏ dễ rung nhiều vòng, gần 1 thường hồi ít vượt đích hơn. Đây là mô hình thiết kế toán học; nó chỉ phù hợp nếu quỹ đạo cần tái tạo có kiểu hồi đó. AK74 trong video giữ phần nâng camera đáng kể, nên một spring kéo hết về 0 đã sai về mục tiêu, không chỉ sai thông số.</p>
+<h2 id="foundations-6-projection-fov-va-vi-sao-cung-mot-animation-van-nhin-khac">6. Projection, FOV và vì sao cùng một animation vẫn nhìn khác</h2>
+<p>World FOV quyết định cách cảnh vật được chiếu; viewmodel FOV quyết định cách tay/súng được chiếu nếu dùng hệ first-person riêng. Cùng một chuyển động xương 1 cm có thể tạo số pixel khác nhau khi FOV, khoảng cách camera, aspect ratio hoặc vị trí mesh thay đổi.</p>
+<p>Gần tâm ảnh và với thay đổi nhỏ, có thể hình dung <code>dịch pixel ≈ tiêu cự theo pixel × thay đổi góc</code>. Với horizontal FOV và ảnh rộng W: <code>f ≈ W / (2 tan(FOV/2))</code>. Đây là xấp xỉ để suy luận; không dùng nó đổi trực tiếp mọi pixel của nòng súng thành recoil degrees, vì vật có cả translation, rotation, depth và projection riêng.</p>
+<p>UE hỗ trợ FOV và scale riêng cho first-person primitives; editor viewport thông thường không tự có cùng cấu hình như camera người chơi. Bởi vậy xem mesh trong Editor không thay thế cho xem qua camera lúc Play. Scale để tránh clipping cũng không tự giải quyết logic bắn sát tường. <a href="https://dev.epicgames.com/documentation/unreal-engine/first-person-rendering" target="_blank" rel="noopener noreferrer">Epic: First Person Rendering</a>.</p>
+<p>Thứ tự căn nên là: aspect/FOV → pose nghỉ → tay cầm/mesh/socket → thước ngắm tại ADS → mới đo recoil. Nếu bạn đổi FOV sau khi fit pixel recoil, phải kiểm lại các phép đo bị ảnh hưởng.</p>
+<h2 id="foundations-7-pose-additive-layer-va-he-toa-do">7. Pose, additive, layer và hệ tọa độ</h2>
+<p><strong>Pose</strong> là trạng thái transform của các xương ở một thời điểm. <strong>Full pose</strong> mô tả tư thế đầy đủ. <strong>Additive pose</strong> mô tả phần chênh so với một reference pose xác định. Không được bỏ qua reference hoặc nhầm local space, mesh/component space và world space.</p>
+<p>Sơ đồ tư duy cho AK74 đã sửa:</p>
+<pre><code class="language-text">Nền hiện tại = idle / locomotion / đường chuyển ADS
+Recoil delta = pose Fire đã bake, lấy tương đối với đúng idle dùng lúc bake
+Pose bắn = áp dụng recoil delta lên nền hiện tại với weight phù hợp
+</code></pre>
+<p>“Lấy tương đối” ở đây không phải trừ mọi Euler angle hoặc trừ hai ma trận tùy ý. Translation, quaternion rotation và scale có phép ghép riêng; thứ tự nhân phụ thuộc quy ước engine. Trong UE nên kiểm bằng node/math của engine và transform xương đã evaluate, trước khi tự viết lại công thức.</p>
+<p>Apply Additive và Apply Mesh Space Additive đều cần base cùng additive input, nhưng không thể tráo không gian của dữ liệu cho nhau chỉ vì hình nhìn gần đúng ở một tư thế. Aim Offset là một trường hợp UE có yêu cầu mesh-space riêng; điều đó không có nghĩa mọi Fire clip cũng phải đổi sang mesh space. <a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/blend-nodes?application_version=4.27" target="_blank" rel="noopener noreferrer">Epic: Blend Nodes</a>, <a href="https://dev.epicgames.com/documentation/unreal-engine/aim-offset-in-unreal-engine" target="_blank" rel="noopener noreferrer">Epic: Aim Offset</a>. Tài liệu Blend Nodes dùng bản 4.27 để giải thích khái niệm; implementation của lab được kiểm trên source UE 5.8 local.</p>
+<p><strong>Layer order có ý nghĩa.</strong> Nếu full-pose Fire đè sau ADS, tay có thể bật về hip. Nếu reload bị aim layer đè sau, bàn tay có thể không còn đi tới magazine. Nếu IK giữ tay trái quá chặt trong lúc reload, tay không thể tháo băng. Vì thế hãy ghi cho mỗi action: lớp nào active, weight nào, phần cơ thể nào, IK nào được giữ/tắt.</p>
+<p>Recoil của AK74 được ghép additive, nhưng reload/equip vẫn có lý do dùng full pose. Đây là lựa chọn cho dữ liệu hiện có, không phải quy tắc áp một loại blend cho mọi action và mọi khẩu.</p>
+<h2 id="foundations-8-rig-tay-rig-sung-socket-ik-va-co-khi">8. Rig tay, rig súng, socket, IK và cơ khí</h2>
+<p>Một khẩu có thể dùng nhiều static mesh gắn lên các xương/part có animation, một skeletal mesh đã skin, hoặc một hệ modular được tạo lúc runtime. Skeleton trống trong preview không đủ để kết luận game không có mesh hay cố tình giấu mọi chuyển động.</p>
+<p>Bạn cần kiểm tra bốn quan hệ độc lập:</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Quan hệ</th>
+<th>Điều phải giữ đúng</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Tay phải ↔ grip</td>
+<td>Súng không trượt trong bàn tay khi bắn/ADS.</td>
+</tr>
+<tr>
+<td>Tay trái ↔ điểm cầm</td>
+<td>Giữ được khi di chuyển, nhả đúng khi reload/bolt/pump.</td>
+</tr>
+<tr>
+<td>Parts ↔ xương cơ khí</td>
+<td>Bolt, slide, magazine, belt, charging handle đi theo đúng part.</td>
+</tr>
+<tr>
+<td>Muzzle/ejection/optic ↔ rig</td>
+<td>Flash, vỏ đạn và điểm ngắm không đặt ở socket giả khác vị trí mesh.</td>
+</tr>
+</tbody></table></div>
+<p>IK là công cụ giữ hoặc điều chỉnh điểm tiếp xúc; nó không tự biến một bộ animation không tương thích thành bộ hoàn chỉnh. Nếu bind pose sai, thêm IK có thể che lỗi ở idle nhưng làm reload tệ hơn. Kiểm skeleton hierarchy, rest transform, scale, skin weights và animation compatibility trước.</p>
+<p>Tay và cơ khí phải cùng hiểu action đang ở pha nào. Không nhất thiết hai clip có cùng tổng thời lượng: một clip cơ khí có thể kết thúc rồi giữ pose trong khi tay còn tiếp tục. Đừng kéo giãn tất cả clip về cùng độ dài để tiện code nếu source cho thấy nhịp khác nhau.</p>
+<h2 id="foundations-9-lien-thanh-overlap-reset-hoi-va-vien-cuoi">9. Liên thanh: overlap, reset, hồi và viên cuối</h2>
+<p>Một phát bắn có phần attack, phần chuyển động chính và phần hồi. Khi interval ngắn hơn phần hồi, phát kế tiếp đến lúc phát trước chưa xong. Có nhiều cách thiết kế: restart, crossfade, cộng impulse, duy trì loop, hoặc chuyển state theo pha. Cách nào đúng phụ thuộc reference và graph, không phụ thuộc sở thích của người viết code.</p>
+<p>AK74 đã phải thêm handoff 60 ms vì bản dựng reset pose gây nhảy lớn. Không suy rằng Vector 1.200 RPM cũng nên có handoff 60 ms: interval của nó khoảng 50 ms, nên cách ghép có thể chưa kết thúc đã bị shot khác chen vào. Cần đo lại và kiểm tra tính liên tục của chuỗi, không chỉ frame đẹp nhất của một phát.</p>
+<p>Kiểm tra riêng phát đầu, chuỗi ổn định, nhả cò, bắn lại sau quãng nghỉ ngắn/dài và viên cuối. Pistol có thể giữ slide mở khi hết đạn; súng khác có hành vi khác. Không được lấy “empty idle” của một kiểu cơ khí làm mặc định cho tất cả.</p>
+<h2 id="foundations-10-ads-va-handling-la-mot-qua-trinh">10. ADS và handling là một quá trình</h2>
+<p>ADS gồm đường tay đưa súng lên, căn sight, world zoom, viewmodel projection, tốc độ đi, khả năng bắn và có thể thay đổi độ tản. Chúng có thể có timing khác nhau. Chỉ Lerp giữa hip pose và ADS endpoint sẽ bỏ mất đường đi, độ vượt đích và settle đã được author trong clip.</p>
+<p>Đề xuất ghi các mốc riêng: nhấn aim → bắt đầu nâng → sight vào vùng sử dụng được → đạt tư thế ổn định. “ADS time” phải nói rõ đo tới mốc nào. Một con số không mô tả hết đường cong và không chắc bằng độ dài asset.</p>
+<p>Những trường hợp cần thử: nhấn rồi nhả trước khi ADS xong, nhấn lại khi đang hạ, bắn giữa đường, reload khi giữ aim, đổi súng khi giữ aim, đổi optic và trở lại. Quyết định clip của shot theo mode lúc bắn hay trộn liên tục theo current aim phải được viết rõ. Lab AK74 dùng chính sách theo clip của shot; nền ADS vẫn tiếp tục chuyển.</p>
+<p>Sức nặng còn đến từ equip, holster và sprint-to-fire. Nếu súng đã hạ khi chạy mà bullet vẫn ra ngay trong lúc tay chưa lên theo thiết kế, hình và luật sẽ mâu thuẫn. Ngược lại, thêm khóa input dài không có phản hồi cũng dễ làm người chơi cảm giác bị chậm vô lý.</p>
+<h2 id="foundations-11-locomotion-sway-bob-inertia-va-trang-thai-co-the">11. Locomotion, sway, bob, inertia và trạng thái cơ thể</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Lớp</th>
+<th>Tín hiệu đầu vào nên cân nhắc</th>
+<th>Cần phân biệt với</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Sway</td>
+<td>Tốc độ/độ đổi hướng input hoặc aim có chủ ý</td>
+<td>Aim recoil tự sinh, tránh feedback loop.</td>
+</tr>
+<tr>
+<td>Inertia/lag của súng</td>
+<td>Gia tốc quay/di chuyển, giới hạn lệch</td>
+<td>Input lag thật; mesh chậm không nhất thiết aim cũng chậm.</td>
+</tr>
+<tr>
+<td>Bob</td>
+<td>Nhịp bước và vận tốc mặt đất</td>
+<td>Dao động chạy theo FPS; không phải lúc đứng yên cũng bob.</td>
+</tr>
+<tr>
+<td>Breathing</td>
+<td>State đứng/ngắm, chu kỳ/biên độ thiết kế</td>
+<td>Random mất kiểm soát, hoặc âm thanh thở không khớp thể trạng.</td>
+</tr>
+<tr>
+<td>Sprint</td>
+<td>Luật stamina/tốc độ, clip hạ súng, blend vào/ra</td>
+<td>Tăng speed mà tay vẫn ở firing pose.</td>
+</tr>
+<tr>
+<td>Crouch/prone/jump/land</td>
+<td>Capsule, camera height, posture và landing</td>
+<td>Chỉ đổi chiều cao camera nhưng bỏ collision, aim và transition.</td>
+</tr>
+</tbody></table></div>
+<p>Các quan hệ này là lựa chọn thiết kế. Không mặc định cúi người luôn chính xác hơn, nhảy luôn tăng spread hay mệt luôn làm sway nhiều nếu chưa có bằng chứng reference.</p>
+<p>Mỗi effect nên có giới hạn, thời gian vào/ra, và chính sách khi đổi state. Test đứng–đi–dừng, strafe hai hướng, quay chuột nhanh, sprint rồi bắn, crouch rồi ADS. Một hệ thống chỉ đẹp khi camera bất động chưa chứng minh được cảm giác chơi.</p>
+<h2 id="foundations-12-spread-bloom-va-accuracy-khac-recoil">12. Spread, bloom và accuracy khác recoil</h2>
+<p>Recoil dịch hướng ngắm; spread làm viên đạn lệch quanh một hướng ngắm. Vì vậy súng có thể rất ít rung nhưng vẫn bắn không chính xác, hoặc rung khá mạnh nhưng mỗi viên vẫn đi theo hướng tâm có thể ghìm được.</p>
+<p>Spread cần biết đơn vị, cone half-angle hay full-angle, phân bố xác suất, điều kiện thay đổi và hồi. “Random X/Y bằng nhau” không tự cho phân bố đều trong hình tròn/cone. Chỉ so một cụm vài lỗ đạn không đủ đo phân bố; cần nhiều lượt có seed được ghi và cùng khoảng cách, stance, mode.</p>
+<p><strong>Bloom</strong> là độ tản tăng theo chuỗi bắn; <strong>recovery</strong> là cách nó giảm khi ngừng hoặc đổi state. Đây là hai động lực khác với hồi animation súng. Crosshair có thể phản ánh một phần của chúng, nhưng cần nói rõ nó là vùng xác suất, cone lý thuyết hay chỉ feedback thị giác.</p>
+<p>Trong source lab hiện có <code>HipSpreadDegrees</code>/<code>AimSpreadDegrees</code> và lấy hướng bằng <code>VRandCone</code>. Không vì thế mà coi movement bloom, breathing accuracy hay native WARDOGS distribution đã được phục hồi. Đo đạn bằng vị trí va chạm/hướng launch và số lượt; đo mesh bằng ảnh/xương. Không dùng độ lắc nòng để suy ra spread.</p>
+<h2 id="foundations-13-hitscan-projectile-sight-muzzle-va-ban-sat-vat-can">13. Hitscan, projectile, sight–muzzle và bắn sát vật cản</h2>
+<p><strong>Hitscan</strong> truy vấn va chạm theo ray ở thời điểm bắn; <strong>projectile</strong> có trạng thái và di chuyển theo thời gian. Tracer vẽ bay trên màn hình không chứng minh simulation bên dưới là projectile. Một ray cũng có thể được vẽ bằng tracer đẹp sau khi damage đã được quyết định.</p>
+<p>Trong thiết kế projectile cần kiểm tốc độ, gravity, lifetime, collision/sweep, vật mỏng và timestep. Đối tượng rất nhanh có thể xuyên qua vật cản nếu chỉ kiểm vị trí rời rạc không phù hợp. Trong hitscan cần kiểm channel, hitboxes, khoảng cách, vật che và quy tắc xuyên/ricochet nếu có.</p>
+<p>Camera và muzzle nằm ở hai điểm khác nhau. Gần tường, camera có thể thấy mục tiêu nhưng nòng bị chặn. Một cách thiết kế thường dùng là xác định aim point từ camera, rồi kiểm đường phóng/đường chắn từ muzzle. Cần kiểm thêm trường hợp mesh first-person được scale/projection để chống clipping: vị trí nhìn thấy không luôn là vị trí world phù hợp cho đạn.</p>
+<p>Lab dùng eye trace để chọn aim point, rồi muzzle trace để xác định hit trong nhánh hitscan; nhánh projectile còn kiểm riêng camera→muzzle trước khi spawn. Hai nhánh chưa hoàn toàn cùng quy tắc obstruction. Đây là phạm vi implementation hiện tại, không được quảng cáo thành một hệ thống thống nhất hoàn chỉnh cho mọi khẩu. Tốc độ projectile và delivery của các khẩu phải có nguồn riêng nếu mục tiêu là tái tạo WARDOGS.</p>
+<h2 id="foundations-14-damage-giap-ttk-va-cam-giac-dan-co-luc">14. Damage, giáp, TTK và cảm giác “đạn có lực”</h2>
+<p>Một khẩu có animation mạnh nhưng mục tiêu không phản ứng hoặc kết quả khó hiểu vẫn dễ có cảm giác yếu. Những lớp cần xem: vùng trúng, damage theo khoảng cách, loại đạn, giáp, xuyên, stagger/flinch, phản ứng chết và độ rõ của thông tin.</p>
+<p>Nếu damage mỗi hit là D không đổi, máu H, không giáp và mọi viên đều trúng: <code>STK = ceil(H/D)</code>; với interval T, <strong>TTK từ phát đầu đến phát kết liễu</strong> là <code>(STK−1)×T</code>. Nếu đo từ nhấn cò hoặc projectile có thời gian bay, phải thêm các thành phần tương ứng. Công thức đơn giản này không đủ cho giáp vỡ giữa chuỗi, vùng trúng khác nhau, shotgun nhiều pellet hoặc reload giữa chừng.</p>
+<p>TTK lý tưởng không phải thời gian hạ mục tiêu trong trận thật. Thời gian phát hiện, đưa súng lên, căn, tỷ lệ trúng, đối phương di chuyển và vật che đều góp phần. Khi một loại đạn giảm STK qua một ngưỡng, cảm giác hiệu quả có thể đổi rõ dù damage chỉ tăng ít.</p>
+<p>Các bảng community/beta trong lab là snapshot có nguồn, không là chân lý của mọi build EA. Giữ build/ngày/source cạnh dữ liệu. Thiết kế cân bằng cho game riêng là một công việc khác với sao chép số liệu reference.</p>
+<h2 id="foundations-15-reload-chamber-physical-magazines-va-ngat-action">15. Reload, chamber, physical magazines và ngắt action</h2>
+<p>Reload là một giao dịch gameplay đồng thời là một màn trình diễn. Phải biết viên đạn ở đâu trước, trong và sau action. Những mốc nhìn thấy như rút băng, cắm băng và kéo bolt không tự động bằng mốc cho phép bắn trở lại.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Câu hỏi cần thiết kế/đo</th>
+<th>Hậu quả nếu không rõ</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Tactical khác empty ở đâu?</td>
+<td>Dùng sai clip, slide/bolt hoặc âm thanh.</td>
+</tr>
+<tr>
+<td>Khi nào ammo được chuyển?</td>
+<td>HUD hiện đầy quá sớm, hoặc hủy reload nhân đôi/mất đạn.</td>
+</tr>
+<tr>
+<td>Có chamber độc lập/+1 không?</td>
+<td>Capacity và logic viên cuối mâu thuẫn.</td>
+</tr>
+<tr>
+<td>Băng cũ được giữ, cất hay vứt?</td>
+<td>Tổng đạn không được bảo toàn đúng chính sách.</td>
+</tr>
+<tr>
+<td>Hủy trước/sau commit ra sao?</td>
+<td>Tay cầm băng nhưng state đã nói súng sẵn sàng.</td>
+</tr>
+<tr>
+<td>Per-shell cho ngắt lúc nào?</td>
+<td>Thao tác bắn chen vào shell chưa được nạp, hoặc animation loop mắc kẹt.</td>
+</tr>
+</tbody></table></div>
+<p>Lab đã có băng vật lý, repack và nhánh per-shell, nhưng chưa mô hình chamber+1 hay từng loại đạn trộn trong một băng. Những điều đó phải nằm trong danh sách chưa có, không suy từ số lượng asset hoặc enum.</p>
+<p>Animation Notify hữu ích để gắn âm thanh/VFX vào pha của animation. UE còn có lọc theo weight/LOD và khác biệt giữa notify queued với branching point, nên không nên giả định mọi notify luôn phát đúng một lần ở mọi đường chuyển. Nếu dùng notify cho giao dịch quan trọng, cần kiểm tính duy nhất, hủy, seek, skip, fade và bối cảnh network. <a href="https://dev.epicgames.com/documentation/unreal-engine/animation-notifies-in-unreal-engine" target="_blank" rel="noopener noreferrer">Epic: Animation Notifies</a>.</p>
+<p>Đề xuất giữ action ID và trạng thái commit; một callback lặp không được chuyển ammo lần hai. Hủy action phải hủy cả các sound/effect chưa đến giờ, cùng state liên quan. Đây là bài học rộng hơn “chạy montage reload”.</p>
+<h2 id="foundations-16-am-thanh-luc-vat-lieu-nhip-va-khong-gian">16. Âm thanh: lực, vật liệu, nhịp và không gian</h2>
+<p>Một tiếng súng hoàn chỉnh có thể gồm nhiều vai trò. Đây là bảng phân tích âm thanh, không phải khẳng định WARDOGS luôn phát từng lớp riêng:</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Vai trò</th>
+<th>Người nghe nhận được gì?</th>
+<th>Cần đo/kiểm gì?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Attack/core</td>
+<td>Mốc phát nổ, nhận diện súng</td>
+<td>Onset, khoảng giữa các shot, variant.</td>
+</tr>
+<tr>
+<td>Body/punch</td>
+<td>Cảm giác năng lượng/thân âm</td>
+<td>Mức tương đối và phổ; đừng chỉ tăng volume tổng.</td>
+</tr>
+<tr>
+<td>Mechanical</td>
+<td>Bolt, slide, magazine, belt</td>
+<td>Đồng bộ pha cơ khí; không tự nhân đôi tiếng đã có trong core.</td>
+</tr>
+<tr>
+<td>Tail/reflection</td>
+<td>Cảm giác môi trường và khoảng cách</td>
+<td>Trong nhà/ngoài trời, occlusion, reverb, tắt cò.</td>
+</tr>
+<tr>
+<td>Near-miss/impact</td>
+<td>Đạn đi qua/trúng vật gì</td>
+<td>Theo sự kiện projectile/hit, không phải mọi muzzle event.</td>
+</tr>
+<tr>
+<td>Empty/dry fire</td>
+<td>Súng không còn sẵn sàng</td>
+<td>Chỉ phát khi input/state phù hợp, tránh spam mỗi tick.</td>
+</tr>
+<tr>
+<td>Handling</td>
+<td>Chuyển súng, cầm, aim, reload</td>
+<td>Thời gian, mức ưu tiên và cancellation.</td>
+</tr>
+</tbody></table></div>
+<p>Vì nhiều shot chồng đuôi nhau, súng nhanh cần kiểm concurrency và voice limit. Cắt mọi voice cũ có thể làm tiếng cụt; cho vô hạn voice có thể làm tổng âm thay đổi ngoài ý muốn. Variation giúp tránh lặp máy móc, nhưng random pitch quá rộng có thể làm khẩu súng mất nhận diện. Nên tách seed audio khỏi seed đạn để thêm sound variant không làm đổi pattern gameplay.</p>
+<p>Súng local và súng của người khác có nhu cầu mix khác nhau. Local core có thể dùng 2D để giữ chi tiết; nguồn ở xa cần vị trí, khoảng cách và môi trường. Đây là lựa chọn mix. Epic cung cấp attenuation/spatialization và MetaSounds để xây nguồn âm; asset WAV một mình không chứa toàn bộ routing/mixer runtime. <a href="https://dev.epicgames.com/documentation/unreal-engine/sound-attenuation-in-unreal-engine" target="_blank" rel="noopener noreferrer">Epic: Sound Attenuation</a>, <a href="https://dev.epicgames.com/documentation/unreal-engine/metasounds-quick-start" target="_blank" rel="noopener noreferrer">Epic: MetaSounds</a>.</p>
+<p><strong>Đúng số request không có nghĩa đúng tiếng nghe.</strong> Muốn kiểm audio phải thu output audio thực cùng video/telemetry, so onset, đuôi âm, mức tương đối và nghe A/B cùng mức âm lượng. Capture <code>-nosound</code> chỉ kiểm wiring. Không cộng Punch/Mech/Rattle chỉ vì exporter tìm thấy file; có thể file là biến thể, dependency hoặc một lớp được bật theo điều kiện chưa biết.</p>
+<p>Game thread và audio render thread có đồng hồ khác nhau. UE có Quartz để lập lịch audio chính xác tới sample khi cần, nhưng nó không tự sửa toàn bộ input latency hoặc đồng bộ graphics. Đó là hướng nghiên cứu tiếp nếu phép thu âm chỉ ra timing trên game tick đang giới hạn chất lượng; lab chưa triển khai scheduler audio kiểu đó. <a href="https://dev.epicgames.com/documentation/unreal-engine/quartz-quick-start" target="_blank" rel="noopener noreferrer">Epic: Quartz Quick Start</a>.</p>
+<h2 id="foundations-17-muzzle-flash-smoke-vo-dan-tracer-va-anh-sang">17. Muzzle flash, smoke, vỏ đạn, tracer và ánh sáng</h2>
+<p>Flash giúp xác định discharge; smoke có thể tích lũy và che sight; vỏ đạn giúp đọc cơ khí; tracer giúp đọc hướng; impact giúp đọc va chạm. Mỗi hiệu ứng cần origin, hướng, thời gian, lifetime và điều kiện tồn tại riêng.</p>
+<p>Không được mặc định chúng đều xuất hiện cùng frame. Đo relative timing: vỏ thoát sau discharge bao lâu, flash kéo dài mấy frame, khói còn bao lâu sau nhả cò, tracer xuất hiện ở mọi viên hay một số viên. Nếu muzzle flash quá sáng hoặc smoke quá đặc, người chơi có thể thấy súng “khó kiểm soát” dù transform recoil không đổi.</p>
+<p>VFX và vật liệu chịu ảnh hưởng exposure, bloom, motion blur, temporal reconstruction và ánh sáng môi trường. Cần giữ các thiết lập này ổn định trong A/B. Khi tracking sight, mask flash/smoke hoặc báo frame bị che; không để tracker bám vào một đốm sáng rồi diễn giải thành xương súng đã giật.</p>
+<p>Trong lab, muzzle point light và dấu impact đang là phần dựng nghiên cứu; chưa chứng minh native particle graph, vỏ đạn hoặc shading khớp. Sửa thông số camera để bù cho sight bị flash che là sửa nhầm lớp.</p>
+<h2 id="foundations-18-hit-feedback-doi-tuong-nhan-dan-va-ui">18. Hit feedback, đối tượng nhận đạn và UI</h2>
+<p>Gunfeel không dừng ở đầu nòng. Khi bắn trúng, người chơi cần hiểu kết quả bằng một tổ hợp có kiểm soát: hit sound, hit marker, tác động lên vật liệu, flinch, vết đạn, giáp vỡ, damage information hoặc phản ứng chết.</p>
+<p>Đề xuất tách ít nhất: bắn ra → trúng vật cản → trúng mục tiêu → phá giáp → kết liễu. Không phát tín hiệu trúng người chỉ vì ray tới gần mục tiêu. Không để một hit cho nhiều xác nhận trùng do projectile và trace cùng gọi damage. Với nhiều pellet, phải thiết kế rõ feedback theo pellet hay tổng một shot.</p>
+<p>UI là phần giải thích luật: số đạn, reload progress, mode semi/auto/burst, loại đạn, tương tác và trạng thái không bắn được. Crosshair nên có ý nghĩa nhất quán với spread/aim. Thêm hiệu ứng co giãn đẹp nhưng không liên quan đến accuracy có thể khiến người chơi học sai.</p>
+<p>Target dummy giúp đo lặp lại, nhưng không kiểm được toàn bộ combat. Cần các bài có mục tiêu chạy ngang, bị che, ở nhiều khoảng cách, phản ứng trúng và khả năng gây áp lực. Một khẩu mạnh ở phòng bắn chưa chắc tạo trải nghiệm chiến đấu tốt nếu enemy AI, level sightline và cover không hỗ trợ nó.</p>
+<h2 id="foundations-19-hieu-nang-frame-pacing-thiet-bi-va-kha-nang-tuy-chinh">19. Hiệu năng, frame pacing, thiết bị và khả năng tùy chỉnh</h2>
+<p>FPS trung bình cao không bảo đảm input/animation mượt nếu thỉnh thoảng có frame rất dài. Cần xem thời gian từng frame và tình huống shot đầu, reload đầu, chuyển súng đầu. Asset chưa preload, shader chưa sẵn sàng hoặc tạo nhiều object/effect lúc discharge có thể làm chính frame quan trọng nhất bị hitch.</p>
+<p>Kiểm tra ở 30/60/120 hoặc 144 FPS nếu đó là phạm vi bạn muốn hỗ trợ. Giữ simulation theo giây không tự loại mọi lỗi: ordering, notify, camera interpolation, audio callback và fixed timestep đều có thể khác. Video 60 FPS cũng không cung cấp bằng chứng cho mọi chuyển động giữa hai frame.</p>
+<p>Chuột và gamepad không có cùng mapping. Deadzone, sensitivity, acceleration/smoothing, aim assist và response curve phải có chính sách riêng. Không thêm aim assist chỉ để che lỗi spread hoặc animation. Đây là nhánh thiết kế tương lai của lab, chưa phải tính năng được kiểm đủ trong lượt AK74.</p>
+<p>Đề xuất tùy chỉnh FOV, sensitivity HIP/ADS, độ rung trang trí và mức bob. Giảm rung trang trí nên giữ luật bắn nếu đó là hợp đồng thiết kế. Hãy thử âm thanh nhỏ, camera shake tắt và môi trường ít tương phản: những chế độ này giúp phát hiện game đang dựa vào hiệu ứng nào để truyền thông tin.</p>
+<h2 id="foundations-20-multiplayer-la-mot-tang-rieng">20. Multiplayer là một tầng riêng</h2>
+<p>Hiện bài tập là <strong>single-player</strong>. Không coi việc bắn ổn trong PIE là bằng chứng rằng multiplayer đã sẵn sàng.</p>
+<p>Trong mô hình client–server của UE, server giữ trạng thái có thẩm quyền; client nhận dữ liệu và dựng trải nghiệm cục bộ. Mô phỏng đạn/damage, cosmetic effect và HUD có nhu cầu truyền khác nhau. <a href="https://dev.epicgames.com/documentation/unreal-engine/networking-overview-for-unreal-engine" target="_blank" rel="noopener noreferrer">Epic: Networking Overview</a>.</p>
+<p>Đề xuất khi nâng lên multiplayer: dự đoán phản hồi local để thao tác không phải đợi vòng mạng; dùng shot ID để không phát sound/flash hai lần khi server xác nhận; server kiểm state, ammo và cadence; định nghĩa correction khi prediction sai. Hit confirmation, lag compensation, interpolation và projectile prediction cần thiết kế, triển khai và kiểm tra riêng dưới latency/jitter/loss.</p>
+<p>Giữ dữ liệu mô tả súng tách khỏi instance runtime và tách gameplay khỏi presentation từ bây giờ giúp việc này dễ hơn. Nó không biến project single-player thành hệ multiplayer chỉ bằng bật Replicates.</p>
+<h2 id="foundations-21-do-dung-thu-can-do">21. Đo đúng thứ cần đo</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Câu hỏi</th>
+<th>Bằng chứng phù hợp</th>
+<th>Bằng chứng không đủ</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Đúng luật bắn?</td>
+<td>Shot count, deadline, ammo, state, cancel/commit</td>
+<td>Một video trông mượt.</td>
+</tr>
+<tr>
+<td>Đúng animation composition?</td>
+<td>Transform xương sau evaluate với đúng base/weight/clock</td>
+<td>Chỉ asset preview hoặc clip name.</td>
+</tr>
+<tr>
+<td>Camera gần reference?</td>
+<td>Track nền, biết FOV/giả định và input window</td>
+<td>Độ lắc mesh hoặc similarity toàn ảnh khác bối cảnh.</td>
+</tr>
+<tr>
+<td>Tay/súng gần reference?</td>
+<td>Track đầu ruồi và thân riêng, ảnh native, timestamp</td>
+<td>Xương chạy đúng một clip được chọn tùy ý.</td>
+</tr>
+<tr>
+<td>Audio đúng?</td>
+<td>Thu output và nghe, đo onset/layer/tail</td>
+<td>Counter request trong run <code>-nosound</code>.</td>
+</tr>
+<tr>
+<td>Chơi có dễ hiểu/dễ điều khiển?</td>
+<td>Người chơi thử tác vụ cụ thể và mô tả thời điểm khó chịu</td>
+<td>Một con số RMSE chung.</td>
+</tr>
+</tbody></table></div>
+<p>Không có một điểm số duy nhất đại diện toàn bộ cảm giác bắn. RMSE quỹ đạo tương đối không đo đẹp/xấu, không chứng minh pose tuyệt đối và không đo input latency. Dao động nhỏ hơn không mặc nhiên giống reference hơn. Hãy lưu cả phép đo không cải thiện và các phương án bị loại.</p>
+<p>Tách ba cổng nghiệm thu: <strong>đúng chức năng</strong>, <strong>gần reference theo các đại lượng đã đo</strong>, và <strong>người chơi chấp nhận trong bài thử</strong>. AK74 hiện đã qua bài thử HIP/ADS của bạn; vẫn còn sai lệch thị giác và các hệ ngoài scope cần nghiên cứu.</p>
+<h2 id="foundations-22-lo-trinh-hoc-bang-cach-lam-va-nhung-dieu-nen-nho">22. Lộ trình học bằng cách làm và những điều nên nhớ</h2>
+<p>Các buổi dưới đây là khối thực hành, không phải cam kết mỗi buổi xong trong một ngày. Giữ AK74 hiện tại làm mốc để nghe/nhìn lại sau mỗi thí nghiệm; dùng bản sao cấu hình, không sửa bản đã chấp nhận mà không lưu đối chứng.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Buổi</th>
+<th>Bài tập</th>
+<th>Sản phẩm phải có</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1 — Đọc shot</td>
+<td>Bắn đơn, burst ngắn, giữ cò và nhả; đánh dấu discharge/peak/settle</td>
+<td>Timeline có thời gian và nhãn chưa biết.</td>
+</tr>
+<tr>
+<td>2 — Tách lớp</td>
+<td>So HUD/đạn, pose, camera, sound và VFX riêng</td>
+<td>Bảng giả thuyết: thay lớp nào sẽ đổi điều gì?</td>
+</tr>
+<tr>
+<td>3 — Pose và projection</td>
+<td>So idle, ADS endpoint, đường ADS, đúng base/rig</td>
+<td>Ảnh kiểm grip, sight và transform reference.</td>
+</tr>
+<tr>
+<td>4 — Chuỗi bắn</td>
+<td>Đo first shot, steady burst, release/retrigger, empty</td>
+<td>Curve theo thời gian; không chỉ một ảnh đẹp.</td>
+</tr>
+<tr>
+<td>5 — Audio/VFX/impact</td>
+<td>Thu âm và hình thật, đo các onset và va chạm</td>
+<td>Một shot đồng bộ từ input đến hit, với giới hạn ghi rõ.</td>
+</tr>
+<tr>
+<td>6 — Handling và giao dịch</td>
+<td>Bắn khi đổi aim/sprint, ngắt reload, đổi súng</td>
+<td>Ma trận transition không mất/nhân đôi đạn.</td>
+</tr>
+<tr>
+<td>7 — Khẩu tiếp theo</td>
+<td>Làm theo SOP và worksheet, chưa tune cả kho</td>
+<td>Một khẩu có bản nguồn/trước/sau và biên bản nghiệm thu.</td>
+</tr>
+</tbody></table></div>
+<p>Bạn không cần đoán ngay rằng “súng thiếu sức nặng”. Hãy hỏi cụ thể hơn: <strong>thời gian phản hồi, hướng ngắm, chuyển động mesh, âm thanh hay kết quả hit đang tạo cảm giác ấy?</strong> Sau đó thiết kế một A/B để phân biệt. Đó là cách biến game sense thành kinh nghiệm có bằng chứng, rồi dần dần trực giác của bạn sẽ tốt hơn.</p>
+<p>Từ vựng tra nhanh: <strong>pose</strong> = tư thế xương; <strong>base</strong> = nền để ghép; <strong>additive</strong> = phần chênh so với reference; <strong>viewmodel</strong> = tay/súng nhìn từ người chơi; <strong>cadence</strong> = nhịp phát; <strong>onset</strong> = lúc tín hiệu bắt đầu; <strong>retrigger</strong> = phát lại khi đang còn chuyển động cũ; <strong>settle</strong> = ổn định/hồi sau xung; <strong>spread</strong> = độ tản hướng đạn; <strong>bloom</strong> = độ tản tăng theo hành động; <strong>commit</strong> = mốc giao dịch state có hiệu lực; <strong>provenance</strong> = nguồn gốc dữ liệu; <strong>oracle</strong> = cách tính độc lập dùng để kiểm kết quả; <strong>PIE</strong> = Play In Editor.</p>
+<p>Đọc tiếp <a href="#workflow">quy trình cho từng khẩu</a> và sao chép <a href="#worksheet">worksheet</a>. Khi cần nhớ vì sao quy trình này có những bước ấy, quay lại <a href="#case-study">case study AK74</a>.</p>
+<a class="next-chapter" href="#workflow">Đọc tiếp: Quy trình cho khẩu tiếp theo <span>→</span></a></article><article class="chapter" id="workflow" aria-labelledby="workflow-title"><div class="chapter-kicker">CHƯƠNG 03 <span>·</span> <a href="content/handbook/03-Weapon-Reconstruction-Workflow.vi.md">Bản Markdown ↗</a></div><h1 id="workflow-title">Quy trình tái tạo cảm giác bắn cho một khẩu súng</h1>
+<p>Quy trình này dùng lại cách điều tra đã sửa AK74: xác định điều người chơi nhìn thấy, tách các nguyên nhân, đo, thay một nhóm biến, rồi chơi kiểm chứng. <strong>Không sao chép hệ số HIP 0,45 và blend 60 ms của AK74 sang súng khác.</strong> Những số đó hiệu chỉnh một tổ hợp asset, camera và animation cụ thể. Khẩu mới có thể cần phép ghép khác, hoặc không cần giảm biên độ.</p>
+<p>Mục tiêu đầu tiên là hoàn thành một khẩu với HIP, ADS, bắn đơn, giữ cò, hết đạn và reload. Sau đó mới mở rộng sang khẩu tiếp theo. Dùng <a href="#worksheet">phiếu công việc</a> để không quên nguồn tham khảo và giới hạn kết luận.</p>
+<h2 id="workflow-1-chot-doi-tuong-se-sao-chep">1. Chốt đối tượng sẽ sao chép</h2>
+<p>Ghi tên súng, phiên bản video, phụ kiện, băng đạn, chế độ bắn và trạng thái người chơi. Một khẩu cùng tên nhưng dùng optic hoặc animation khác đã là một ca khác.</p>
+<p>Chọn một đoạn ngắn có thể quan sát rõ. Đừng bắt đầu bằng yêu cầu “mọi khẩu giống toàn bộ game”. Với khẩu tự động, bộ tham khảo tối thiểu gồm đứng yên HIP một viên, HIP liên thanh, ADS một viên, ADS liên thanh, vào/ra ADS, tactical reload và empty reload. Thêm đi/chạy sau khi các ca đứng yên ổn định.</p>
+<p><strong>Đầu ra:</strong> danh sách đoạn video với timestamp, FPS/PTS, kích thước ảnh và hash file. Ghi riêng phần không nhìn thấy. Không có input overlay thì chưa biết thời điểm bấm chuột; chỉ biết thời điểm phản ứng xuất hiện.</p>
+<h2 id="workflow-2-lap-bang-bang-chung-truoc-khi-viet-code">2. Lập bảng bằng chứng trước khi viết code</h2>
+<p>Mỗi dữ liệu phải có một nhãn:</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Nhãn</th>
+<th>Ví dụ</th>
+<th>Cách sử dụng</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Asset nguồn đã đọc</td>
+<td>Key animation, mesh, skin weight, notify giải mã được</td>
+<td>Giữ nguyên và kiểm tra khi import</td>
+</tr>
+<tr>
+<td>Đo từ video/audio</td>
+<td>Chu kỳ tiếng bắn, đường di chuyển thước ngắm</td>
+<td>Ghi cửa sổ đo và sai số</td>
+</tr>
+<tr>
+<td>Nguồn cộng đồng</td>
+<td>Damage, RPM từ CSV beta</td>
+<td>Giữ định danh phiên bản; không gộp với build video</td>
+</tr>
+<tr>
+<td>Lựa chọn tái tạo</td>
+<td>Blend HIP, fallback khi thiếu clip</td>
+<td>Nêu rõ mục đích và phép kiểm chứng</td>
+</tr>
+<tr>
+<td>Chưa biết</td>
+<td>Native recoil graph, input chuột nguồn</td>
+<td>Để trống; không điền bằng phỏng đoán rồi gọi là native</td>
+</tr>
+</tbody></table></div>
+<p><strong>Cổng kiểm tra:</strong> người khác đọc bảng phải phân biệt được “game gốc có dữ liệu này” với “lab chọn giá trị này”. Xem mẫu <a href="reports/Gunplay-WeaponEvidence-20260923.vi.html">kiểm toán từng súng</a>; báo cáo đó là snapshot lịch sử, cần đối chiếu các bản sửa AK74 mới hơn.</p>
+<h2 id="workflow-3-dung-dung-tai-nguyen-va-he-toa-do">3. Dựng đúng tài nguyên và hệ tọa độ</h2>
+<p>Tập hợp arms mesh, weapon mesh, skeleton, material, các bộ phận, socket và cặp animation tay/cơ khí. Kiểm tra idle, fire, aim fire, reload, empty reload, equip, inspect và last-round nếu có. Không kết luận súng thiếu animation chỉ vì model ban đầu là static mesh: phải lần tới dữ liệu lắp ráp, rig và skin weight đã phục hồi.</p>
+<p>Mở từng clip tại đầu, giữa và cuối. Kiểm tra tay nắm đúng, magazine/bolt chuyển động đúng, phụ tùng dự phòng có bị hiện nhầm không. Ghi rõ base pose của additive. Một clip đã bake trên hip idle không được dùng như pose tuyệt đối để đè lên ADS.</p>
+<p><strong>Cổng kiểm tra:</strong> transform xương đã evaluate phải khớp phép ghép dự kiến; hình súng nhìn được và không rời tay. Clip thiếu phải có fallback được ghi tên. Trong bộ hiện tại, MP5 thiếu mechanical fire đã gán: own mechanical idle là fallback, không phải bolt gốc đã được tái tạo.</p>
+<h2 id="workflow-4-khoa-may-quay-truoc-khi-chinh-recoil">4. Khóa máy quay trước khi chỉnh recoil</h2>
+<p>Chốt độ phân giải, tỷ lệ màn hình, world FOV, viewmodel FOV, vị trí tay, optic và pose idle. Camera nhìn thế giới và phép chiếu tay/súng là hai phần cần kiểm riêng.</p>
+<p>So nền khi HIP→ADS để ước lượng tỷ lệ zoom; so silhouette súng để căn viewmodel. Không phóng cả ảnh đến khi súng vừa mắt rồi gọi là đúng camera. Giữ bảng hiệu chỉnh này cố định trong một lượt so sánh; đổi FOV sẽ thay đổi số pixel của cùng một chuyển động.</p>
+<p><strong>Đầu ra:</strong> ảnh idle HIP/ADS và thông số camera của lab. Nếu không biết FOV gốc, ghi “tỷ lệ zoom đo được, FOV tuyệt đối chưa xác nhận”.</p>
+<h2 id="workflow-5-sua-lich-ban-va-trang-thai-truoc-khi-sua-hinh">5. Sửa lịch bắn và trạng thái trước khi sửa hình</h2>
+<p>Xác định trigger press/release, semi/auto/burst, cooldown, ammo, sprint và reload. Một phát phải có một định danh và một mốc thời gian logic. Animation, âm thanh và hiệu ứng dùng sự kiện đó; không để mỗi thành phần tự đoán khi nào súng bắn.</p>
+<p>Với RPM, khoảng cách dự kiến là <code>60 / RPM</code> giây. Ví dụ AK74 hiện dùng khoảng 92,31 ms. Ở 60 FPS khoảng đó không phải số frame nguyên: phải giữ lịch thời gian và tuổi shot, không ép cứ sáu frame mới bắn một phát.</p>
+<p><strong>Cổng kiểm tra:</strong> đếm đủ phát, trừ đúng đạn, đổi fire mode giữ cooldown hợp lệ; nhả cò, đổi súng và mở menu dừng hành vi đúng. Không dùng độ dài Fire sequence làm chu kỳ bắn. Giữ cả scheduled time và actual dispatch time để thấy giới hạn tick.</p>
+<h2 id="workflow-6-ghi-baseline-gameplay-that">6. Ghi baseline gameplay thật</h2>
+<p>Dùng cùng input, seed, vị trí, vũ khí, phụ kiện và bước thời gian cho bản trước/sau. Ghi PNG cùng telemetry: shot index, ammo, clip/time/weight thực, transform xương thực, ADS progress, camera, aim ray và muzzle. Biến <code>ActionTime</code> đúng chưa chứng minh pose đang render đúng; AK74 đã từng lệch một frame vì thứ tự cập nhật proxy.</p>
+<p>Đường chạy hiện có:</p>
+<pre><code class="language-powershell"># Chạy từ WardogsAssetLab
+.\Run-VideoGameplay.ps1 -Stage Build
+.\Run-VideoGameplay.ps1 -Stage Test
+.\Run-RuntimeBurst.ps1 -Config .\Config\AK74Focus.json -ShowcaseReference
+</code></pre>
+<p>Lệnh cuối là <strong>bộ AK74 đang có</strong>, không tự tạo bài test cho khẩu bất kỳ. Với súng mới, tạo config ca đo từ schema mà probe hiện đọc và kiểm tra asset/profile được chọn. Khi cần thêm telemetry hoặc ca chưa được probe hỗ trợ, phải phát triển công cụ trước; không ghi rằng hệ thống đã đo chúng.</p>
+<h2 id="workflow-7-tach-va-do-cac-chuyen-dong">7. Tách và đo các chuyển động</h2>
+<p>Lấy frame phản ứng bắn đầu tiên làm mốc quan sát và ghi bất định. Không dịch timeline riêng từng đoạn để che lỗi. Giữ frame trước trigger nếu capture lab hỗ trợ; video nguồn có thể không cho biết bước dịch trước flash.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Vùng đo</th>
+<th>Điều muốn biết</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Nền đứng yên</td>
+<td>Chuyển động camera tổng hợp</td>
+</tr>
+<tr>
+<td>Thân súng/thước ngắm sau</td>
+<td>Dịch chuyển, xoay, thay đổi kích thước viewmodel</td>
+</tr>
+<tr>
+<td>Đầu ruồi</td>
+<td>Quỹ đạo đầu nòng mà người chơi cảm thấy rung</td>
+</tr>
+<tr>
+<td>Magazine, bolt, slide</td>
+<td>Cơ khí và thứ tự hành động</td>
+</tr>
+<tr>
+<td>Flash, HUD và âm bắn</td>
+<td>Thời điểm phản hồi quanh mỗi shot</td>
+</tr>
+</tbody></table></div>
+<p>Theo dõi vị trí, độ lệch từng frame và sai lệch quỹ đạo trong cùng cửa sổ. Kiểm tra độ tin cậy của tracker bằng ảnh. Feature bị khói/flash che hoặc trôi khỏi đầu ruồi thì loại mẫu hoặc đổi phương pháp, không giữ điểm số vì nó trông đẹp.</p>
+<p><strong>Cổng kiểm tra:</strong> báo cáo phải chỉ được vùng ảnh và frame gây sai. Điểm toàn ảnh giữa hai map khác nhau không phải thước đo gunfeel.</p>
+<h2 id="workflow-8-hieu-chinh-tung-lop-co-doi-chung">8. Hiệu chỉnh từng lớp có đối chứng</h2>
+<p>Thứ tự thực hành: base pose → ADS trajectory → clock → viewmodel fire → camera recoil → sway/bob → audio/VFX → hit feedback. Chỉ chuyển bước khi không còn lỗi cấu trúc rõ ràng ở bước trước.</p>
+<p>Tạo vài ứng viên nhỏ, mỗi ứng viên đổi một nhóm biến. AK74 HIP đã so biên độ và thời gian nối pose; thử giảm rotation riêng nhưng không chọn vì không cải thiện chắc chắn tổng thể. Giữ bản thất bại cùng lý do loại bỏ để không lặp lại thử nghiệm.</p>
+<p><strong>Cổng kiểm tra:</strong> ứng viên vừa gần nguồn theo phép đo, vừa không hỏng ca đã chấp nhận. “Rung ít hơn” không tự động là “giống hơn”: nguồn vẫn có chuyển động có nhịp.</p>
+<h2 id="workflow-9-hoan-thien-nhung-phan-ngoai-recoil">9. Hoàn thiện những phần ngoài recoil</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Phần</th>
+<th>Công việc và tiêu chí</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Input</td>
+<td>Kiểm press, hold, release, click nhanh, focus/menu; đo click→shot chỉ khi có timestamp input.</td>
+</tr>
+<tr>
+<td>ADS</td>
+<td>Quỹ đạo đưa lên/hạ xuống, zoom, độ nhạy, ngắt và đảo chiều giữa chừng; tách pose khỏi thời điểm được bắn chính xác.</td>
+</tr>
+<tr>
+<td>Reload</td>
+<td>Tách tactical/empty, thời điểm thay ammo, thời điểm sẵn sàng bắn, foley và khả năng hủy; SKS cần open/insert/close.</td>
+</tr>
+<tr>
+<td>Cơ khí</td>
+<td>Last-round, empty idle, bolt/slide, magazine visibility; không chỉ xem arms đẹp.</td>
+</tr>
+<tr>
+<td>Locomotion</td>
+<td>Đi, strafe, crouch, sprint, dừng chạy rồi bắn, nhảy/tiếp đất; đo bob, sway và hạn chế hành động riêng.</td>
+</tr>
+<tr>
+<td>Đường đạn</td>
+<td>Phân biệt aim ray, muzzle, spread, projectile; test vật cản gần và mục tiêu xa. Chưa có native velocity thì giữ nhãn study.</td>
+</tr>
+<tr>
+<td>Damage</td>
+<td>Zone, loại đạn, armor, STK/TTK; video showcase bắn vào không khí không đủ kiểm phần này.</td>
+</tr>
+<tr>
+<td>Audio</td>
+<td>Ghi âm thật; kiểm onset, biến thể, overlap, tail, tiếng cơ khí và môi trường. Request count không chứng minh đã nghe đúng.</td>
+</tr>
+<tr>
+<td>VFX</td>
+<td>Flash, smoke, shell ejection, tracer, impact; kiểm số lần phát, độ trễ, vị trí và che khuất ADS.</td>
+</tr>
+<tr>
+<td>HUD</td>
+<td>Ammo, magazine, fire mode, hit marker, reload feedback phải lấy trạng thái gameplay thật.</td>
+</tr>
+</tbody></table></div>
+<p>Multiplayer là một giai đoạn khác: cần authority, prediction, reconciliation, timestamp shot, lag compensation và kiểm độ trễ. Lab hiện là single-player; không được coi FPS capture offline là bằng chứng mạng đã đúng. Haptics, aim assist, xuyên vật liệu và acoustic routing cũng cần task/bằng chứng riêng nếu muốn bổ sung.</p>
+<h2 id="workflow-10-mo-rong-theo-dac-tinh-tung-khau">10. Mở rộng theo đặc tính từng khẩu</h2>
+<p>Cả mười khẩu dưới đây đã có profile chơi được. <strong>Chỉ AK74 HIP/ADS có vòng hiệu chỉnh sâu và đã được người dùng chấp nhận ở hiện tại.</strong> Bảng là ưu tiên điều tra tiếp, không cấp nhãn fidelity cho chín khẩu còn lại.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Khẩu</th>
+<th>Điều cần giữ riêng khi áp dụng quy trình</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AK74</td>
+<td>Giữ baseline đã chấp nhận; mở rộng locomotion/audio/VFX mà không đổi HIP/ADS tùy tiện.</td>
+</tr>
+<tr>
+<td>Vector</td>
+<td>Cadence nhanh; tuổi shot, handoff và âm liên thanh phải kiểm ở nhiều FPS.</td>
+</tr>
+<tr>
+<td>M249</td>
+<td>ADS nặng/chậm, reload dây đạn dài; kiểm tay, cover, belt và các pha reload.</td>
+</tr>
+<tr>
+<td>SKS</td>
+<td>Semi và nạp từng viên; không dùng transaction thay băng cho open/insert/close.</td>
+</tr>
+<tr>
+<td>M1911</td>
+<td>Cú nâng pistol, last-round/slide-lock; xác minh đúng xương cơ khí thay vì đoán theo tên.</td>
+</tr>
+<tr>
+<td>M4</td>
+<td>Tách curve riêng khỏi AK74; own ADS/fire/reload và nhịp video cần đo riêng.</td>
+</tr>
+<tr>
+<td>GGX17</td>
+<td>Fire nguồn có key 30 Hz; nội suy không tạo thêm bằng chứng về chuyển động gốc.</td>
+</tr>
+<tr>
+<td>Deagle</td>
+<td>Biên độ pistol lớn; đỉnh muzzle, recovery và thời điểm được bắn lại là các đại lượng khác nhau.</td>
+</tr>
+<tr>
+<td>MP5</td>
+<td>Bổ sung/ghi rõ mechanical fire thiếu; không chỉnh tay để che bộ phận đứng yên.</td>
+</tr>
+<tr>
+<td>KH2002</td>
+<td>Semi/Burst có cadence khác; kiểm số viên, pause và hành vi khi nhả cò giữa burst.</td>
+</tr>
+</tbody></table></div>
+<p>Catalog showcase còn <strong>23 khẩu chưa tích hợp vào bộ mười</strong>. Súng shotgun cần pellet/pump/per-shell; bolt-action cần chu kỳ bolt, chamber và scope; launcher cần projectile/fuse/explosion; bow cần charge/release. Đây là danh sách câu hỏi triển khai, không khẳng định mọi cơ chế ấy đã giải mã trong Wardogs. Xác nhận từng tên, variant và asset trước khi tạo profile.</p>
+<h2 id="workflow-11-nghiem-thu-va-dong-goi">11. Nghiệm thu và đóng gói</h2>
+<p>Kiểm tối thiểu bắn đơn, giữ cò, hết băng, dry trigger, reload hai loại, ngắt reload, HIP↔ADS khi bắn, đổi súng/menu, sprint→fire và mục tiêu gần/xa. Lặp logic timing ở 30/60/120 hoặc 144 FPS theo khả năng công cụ; so video dùng đúng FPS nguồn. Kiểm hiệu năng/loading vì một lần hitch lúc chọn súng cũng phá cảm giác đáp ứng.</p>
+<p>Giữ ba loại kết luận tách biệt: test logic đạt; hình/âm gần reference trong cửa sổ đã đo; người dùng chơi thấy ổn. Cả ba bổ sung cho nhau. AK74 hiện đáp ứng phần người dùng đã thử, nhưng báo cáo vẫn giữ sai lệch còn lại thay vì đổi nhãn thành bản sao 1:1.</p>
+<p><strong>Gói bàn giao:</strong> level test, launcher, profile/config, bảng nguồn, manifest capture, trang trước/sau, receipt test, hướng dẫn điều khiển và danh sách chưa biết. Khi sửa tiếp, lấy gói này làm baseline. Dùng chung quy trình và hạ tầng; giữ đặc tính mỗi khẩu trong dữ liệu riêng có nguồn gốc rõ ràng.</p>
+<a class="next-chapter" href="#worksheet">Đọc tiếp: Phiếu công việc <span>→</span></a></article><article class="chapter" id="worksheet" aria-labelledby="worksheet-title"><div class="chapter-kicker">CHƯƠNG 04 <span>·</span> <a href="content/handbook/04-Weapon-Worksheet.template.vi.md">Bản Markdown ↗</a></div><h1 id="worksheet-title">Phiếu tái tạo một khẩu súng</h1>
+<p>Sao chép file này cho mỗi khẩu. Các ô trống là việc phải điều tra, không phải cấu hình runtime đã tồn tại. Dùng cùng <a href="#workflow">quy trình</a>; không điền mặc định hệ số của AK74.</p>
+<h2 id="worksheet-ho-so">Hồ sơ</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Điền</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Tên / variant / profile ID</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Người thực hiện / ngày</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Mục tiêu lượt này</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Build/archive nguồn</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Video / timestamp / hash / FPS / resolution</td>
+<td>…</td>
+</tr>
+<tr>
+<td>CSV hoặc tài liệu bổ sung / phiên bản</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Optic / muzzle / magazine / ammo</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Map / camera / tư thế</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Baseline được chấp nhận</td>
+<td>…</td>
+</tr>
+<tr>
+<td>File/commit/build hash đang sửa</td>
+<td>…</td>
+</tr>
+</tbody></table></div>
+<h2 id="worksheet-bang-chung">Bằng chứng</h2>
+<p>Chỉ dùng nhãn: <strong>asset nguồn đã đọc</strong>, <strong>đo video/audio</strong>, <strong>nguồn cộng đồng</strong>, <strong>lựa chọn tái tạo</strong>, <strong>chưa biết</strong>. Thêm hàng khi cần.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Đại lượng/asset</th>
+<th>Giá trị/path</th>
+<th>Nhãn</th>
+<th>Nguồn cụ thể</th>
+<th>Sai số/giới hạn</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Fire mode và cadence</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Băng đạn/chamber</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>HIP/ADS FOV hoặc tỷ lệ zoom</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Viewmodel FOV/transform</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Aim-in/out timeline</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Fire additive base</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Recoil camera</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Spread/velocity/gravity</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Damage/armor/zone</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Audio/VFX routing</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+</tbody></table></div>
+<h2 id="worksheet-asset-va-lap-rap">Asset và lắp ráp</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Asset/path</th>
+<th>Đã kiểm</th>
+<th>Thiếu/fallback</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Arms mesh / skeleton</td>
+<td>…</td>
+<td>☐</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Weapon mesh / skeleton / skin weights</td>
+<td>…</td>
+<td>☐</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Part / magazine / optic / material</td>
+<td>…</td>
+<td>☐</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Weapon socket / muzzle / eject</td>
+<td>…</td>
+<td>☐</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Idle / walk / sprint</td>
+<td>…</td>
+<td>☐</td>
+<td>…</td>
+</tr>
+<tr>
+<td>ADS-in / ADS-out</td>
+<td>…</td>
+<td>☐</td>
+<td>…</td>
+</tr>
+<tr>
+<td>HIP Fire / ADS Fire</td>
+<td>…</td>
+<td>☐</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Mechanical Fire / AimFire</td>
+<td>…</td>
+<td>☐</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Last-round / empty idle</td>
+<td>…</td>
+<td>☐</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Tactical reload / empty reload</td>
+<td>…</td>
+<td>☐</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Open / insert / close nếu cần</td>
+<td>…</td>
+<td>☐</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Equip / inspect</td>
+<td>…</td>
+<td>☐</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Sound variants / foley / tails</td>
+<td>…</td>
+<td>☐</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Muzzle / smoke / casing / impact</td>
+<td>…</td>
+<td>☐</td>
+<td>…</td>
+</tr>
+</tbody></table></div>
+<p>Ghi riêng độ dài arms và mechanical, montage segment, play rate, blend và notify. Có clip không đồng nghĩa đã phục hồi graph sử dụng clip đó.</p>
+<h2 id="worksheet-ca-tham-khao-va-input-tai-hien">Ca tham khảo và input tái hiện</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Case ID</th>
+<th>Đoạn nguồn</th>
+<th>Input lab</th>
+<th>Trạng thái ban đầu</th>
+<th>Cửa sổ được phép kết luận</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>hip-single</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>hip-auto hoặc rapid-semi</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>ads-single</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>ads-auto hoặc rapid-semi</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>ads-in/out</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>tactical-reload</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>empty-reload</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>locomotion</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+</tbody></table></div>
+<ul>
+<li>Trigger timestamp biết/không biết: …</li>
+<li>Mốc phản ứng nhìn thấy và sai số frame: …</li>
+<li>Seed, fixed delta, world/viewmodel FOV: …</li>
+<li>Đường dẫn config và lệnh chạy thực tế: …</li>
+<li>Manifest + telemetry + hash bản build: …</li>
+<li>Audio capture có/không, thiết bị/mức volume: …</li>
+</ul>
+<h2 id="worksheet-gia-thuyet-thu-nghiem-ket-luan">Giả thuyết → thử nghiệm → kết luận</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Triệu chứng nhìn thấy</th>
+<th>Nguyên nhân nghi ngờ</th>
+<th>Thay đổi duy nhất/nhóm biến</th>
+<th>Kết quả</th>
+<th>Chọn/loại và lý do</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>H1</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>H2</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>H3</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+</tbody></table></div>
+<p>Trước khi chỉnh số, thử loại lỗi base pose, additive, attachment, clock, tick order và double recoil. Không đoán “recoil quá mạnh” chỉ từ đầu súng rung.</p>
+<h2 id="worksheet-bang-do-truoc-sau">Bảng đo trước/sau</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Phép đo</th>
+<th>Vùng/đơn vị</th>
+<th>Nguồn</th>
+<th>Baseline</th>
+<th>Ứng viên</th>
+<th>Sai số/độ tin cậy</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Khoảng cách các shot</td>
+<td>ms</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Chuyển động nền</td>
+<td>px/độ, ghi FOV</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Quỹ đạo đầu ruồi</td>
+<td>px, relative anchor</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Quỹ đạo thân súng</td>
+<td>px / scale</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Bước nhảy frame lớn nhất</td>
+<td>px</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>ADS entry / exit</td>
+<td>ms</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Reload commit / ready</td>
+<td>ms</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Shot→flash / shot→audio</td>
+<td>ms</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Accuracy/STK/TTK theo ca</td>
+<td>ghi điều kiện</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+</tbody></table></div>
+<p>Không gộp pixel toàn cảnh khác map thành một điểm fidelity. Không hạ điểm sai lệch bằng cách tự dịch timeline từng ứng viên. Ghi các frame mất dấu vì flash/khói thay vì lặng lẽ giữ số đo lỗi.</p>
+<h2 id="worksheet-hoi-quy-va-ban-giao">Hồi quy và bàn giao</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Kiểm tra</th>
+<th>Kết quả/receipt</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HIP/ADS single và liên tục</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>HIP↔ADS giữa shot/burst</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Full magazine / last round / empty trigger</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Tactical/empty/per-shell reload</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Hủy reload trước/sau commit</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Switch weapon / menu / reset</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Walk/crouch/sprint/landing</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Vật cản gần / aim ray / muzzle</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Damage zone / armor / ammo</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Nhiều FPS và hitch theo công cụ hiện có</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Nghe audio thật, kiểm overlap/cutoff</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>VFX và hit feedback</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Baseline khác không bị đổi</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Người dùng chơi thử</td>
+<td>…</td>
+<td>…</td>
+</tr>
+</tbody></table></div>
+<ul>
+<li><strong>Đã giống hơn ở đâu, bằng chứng nào:</strong> …</li>
+<li><strong>Chưa biết hoặc chưa đạt:</strong> …</li>
+<li><strong>Phạm vi đã đo; không suy rộng:</strong> …</li>
+<li><strong>Thông số cuối + lý do:</strong> …</li>
+<li><strong>Level/launcher:</strong> …</li>
+<li><strong>Trang đối chiếu:</strong> …</li>
+<li><strong>Build/test receipt:</strong> …</li>
+<li><strong>Bước tiếp theo và điều kiện cần:</strong> …</li>
+</ul>
+<p>Chỉ đánh dấu hoàn thành phạm vi thực sự đã kiểm. Một hệ profile/config tổng quát cho mọi đường recoil, một audio comparator hoặc kiểm mạng mới là đề xuất phát triển nếu chưa có code và receipt tương ứng; phiếu này không làm chúng tự tồn tại.</p>
+<a class="next-chapter" href="#start">Về đầu cẩm nang ↑</a></article><footer class="footer">Nghiên cứu độc lập tại WardogsAssetLab. Không phải tài liệu chính thức của WARDOGS/BULKHEAD. Các kết quả gắn với build và phạm vi đã đo.</footer></main></div><script>const links=[...document.querySelectorAll('.chapter-link')];function updateChapter(){let current='start';for(const c of document.querySelectorAll('article.chapter'))if(c.getBoundingClientRect().top<180)current=c.id;for(const a of links)if(a.hash==='#'+current)a.setAttribute('aria-current','location');else a.removeAttribute('aria-current')}addEventListener('scroll',updateChapter,{passive:true});updateChapter();</script></body></html>

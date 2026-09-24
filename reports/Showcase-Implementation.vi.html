@@ -1,0 +1,116 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="description" content="Báo cáo hiệu chỉnh AK74, nền tảng Gun Gameplay và quy trình tái tạo cảm giác bắn từng khẩu."><title>Gunplay theo video bxMd6SvtJi8 · Wardogs Docs</title><link rel="stylesheet" href="../assets/styles.css"></head><body><header class="masthead"><div class="brand">WARDOGS DOCS<span>Cẩm nang Gun Gameplay · tiếng Việt · 24.09.2026</span></div><div class="actions"><a href="../index.html">Cẩm nang</a><a href="../references.html">Báo cáo & bằng chứng</a><a href="https://github.com/SlimeVRX/Wardogs-Docs">GitHub ↗</a><button class="print" onclick="window.print()">In / lưu PDF</button></div></header><main class="report-layout"><article class="chapter"><p class="report-date">BÁO CÁO LỊCH SỬ · <a href="../references.html">Về danh mục</a> · <a href="../content/reports/Showcase-Implementation.vi.md">Markdown</a></p><aside class="notice">Báo cáo này giữ trạng thái tại thời điểm ghi. Các nhận xét về asset, sound, ADS và thông số có thể đã được sửa ở bước sau. Đọc <a href="../index.html#case-study">lịch sử AK74</a> và <a href="../index.html#start">kết quả hiện tại</a> trước khi sử dụng số liệu.</aside><h1 id="showcase-implementation-vi-md-title">Gunplay theo video bxMd6SvtJi8</h1>
+<p><strong>Cập nhật gunfeel:</strong> xem <a href="Gunplay-Changes-20260923.vi.html">phân tích/sửa lỗi</a> và <a href="../references.html#local-e6dfa4fb33ab">đối chiếu live bắn/ADS (workspace)</a>. Các receipt 479-check và pose-only phía dưới là lịch sử; phép kiểm mới bổ sung transform xương được evaluate ở đúng sample, thay vì chỉ kiểm clock metadata.</p>
+<p>Bản mới nhất đạt <strong>539/539 kiểm tra gameplay và 26/26 kiểm thử quy tắc</strong>, với 82 ảnh gameplay và 2.946 frame gunfeel ở 60 Hz. <a href="../references.html#local-810cc062aa87">Receipt gameplay mới (workspace)</a> · <a href="../references.html#local-cedc45660cc0">Audit gunfeel (workspace)</a>. Chỉ xác nhận các hành vi đã kiểm tra, chưa chứng nhận 1:1 với video.</p>
+<p>Mục tiêu là đối chiếu hành động có thể chơi với hình và âm thanh nguồn. <strong>Bản hiện tại chưa khớp từng frame cho toàn bộ 33 vũ khí.</strong> Có 10 bộ súng đã tích hợp: AK74, SUPER-45/Vector, M249, SKS, M1911, M4, GGX-17, Deagle, MP5 và KH2002. <a href="../references.html#local-30b9352badd4">Bốn khẩu mở rộng (workspace)</a> có quy trình và giới hạn riêng. <a href="../references.html#local-724267aa20dc">Kiểm kê 33 vũ khí (workspace)</a> phân biệt những bộ đã chuẩn bị với 23 bộ mới có đường dẫn tài nguyên.</p>
+<h2 id="showcase-implementation-vi-md-chay-ban-choi">Chạy bản chơi</h2>
+<p>Mở <code>WardogsAssetLab/Play-Showcase.cmd</code>. Launcher dùng level <code>L_VideoGameplay</code>, iron mặc định và preset nhịp bắn, thời gian ADS, tỷ lệ world zoom đo gần đúng từ video mới. <code>Play-VideoGameplay.cmd</code> giữ nhịp bắn từ bộ CSV beta và thời gian source ADS trước khi fit. Hai launcher dùng cùng gameplay và các asset đã import; preset chỉ chỉnh runtime, không ghi đè asset hay CSV.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Điều khiển</th>
+<th>Chức năng</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1 / 2 / 3 / 4 / 5 / 6</td>
+<td>AK74 / Vector / M249 / SKS / M1911 / M4</td>
+</tr>
+<tr>
+<td>Con lăn hoặc [ / ]</td>
+<td>Chuyển qua toàn bộ 10 khẩu; vendor E có nút trang trước/sau</td>
+</tr>
+<tr>
+<td>WASD, Shift, Space</td>
+<td>Di chuyển, chạy nhanh, nhảy</td>
+</tr>
+<tr>
+<td>Chuột trái / phải</td>
+<td>Bắn / ngắm</td>
+</tr>
+<tr>
+<td>R</td>
+<td>Nạp đạn; SKS nạp từng viên</td>
+</tr>
+<tr>
+<td>I</td>
+<td>Inspect bằng clip tay và clip cơ khí của súng</td>
+</tr>
+<tr>
+<td>B</td>
+<td>Đổi chế độ của chính khẩu: semi/auto hoặc semi/burst; súng chỉ có semi giữ nguyên</td>
+</tr>
+<tr>
+<td>E / Tab</td>
+<td>Chọn trang bị / ba lô</td>
+</tr>
+<tr>
+<td>C</td>
+<td>Dồn đạn vào băng; không áp dụng cho băng trong SKS</td>
+</tr>
+</tbody></table></div>
+<p>Đạn, loại đạn và optic được lưu theo từng ô súng. UI lấy danh sách từ arsenal; M1911/M4 đã có icon súng nguồn và M1911 có icon băng đạn riêng. Tài nguyên chưa có icon đã xác minh dùng nhãn chữ.</p>
+<h2 id="showcase-implementation-vi-md-nhung-thay-doi-co-can-cu">Những thay đổi có căn cứ</h2>
+<ul>
+<li><strong>Inspect khác reload.</strong> Phần đầu nhiều đoạn showcase là xem băng đạn, bolt và thân súng. Runtime có hành động Inspect riêng, không tiêu đạn, có thể bị bắn/ngắm/chạy/nạp/đổi súng ngắt. M1911 không có mechanical Inspect riêng trong bộ nguồn tìm được: tay phát Inspect, cơ khí giữ own-idle; đây là fallback được ghi rõ.</li>
+<li><strong>Khẩu mới có rig và âm thanh riêng.</strong> M1911 và M4 được ghép từ nhánh Mutable của chính chúng. M1911 dùng magazine có identity nguồn <code>Items.Magazine.M1911.Standard</code>, không suy đoán rằng số MAGZ phải trùng số WEPN. Reload lấy Foley của khẩu tương ứng, không rơi về bộ AK74.</li>
+<li><strong>M4 dùng biến thể nhìn thấy trong video.</strong> Thay bộ rail ban đầu bằng ốp tay tròn <code>HNGD_050</code> và bộ tay xách/đầu ngắm <code>IRNS_006</code>. Giữ nguyên 42 xương, clip, carry, socket và audio; bộ mới được kiểm 54 điều kiện khi nhập. <a href="../references.html#local-32c26b228b33">Geometry và provenance M4 (workspace)</a>. Icon M1911/M4 và băng M1911 cũng dùng texture nguồn, có 18 kiểm tra nhập riêng.</li>
+<li><strong>Hết đạn là một trạng thái trình diễn.</strong> Phát cuối chọn mechanical last-shot; sau đó idle dùng clip empty của cùng khẩu khi nguồn có. Geometry nguồn và bản nhập M1911 xác nhận nhóm slide <code>stockRelease_J</code> (2.719 đỉnh) lùi khoảng 6,10 cm. Tên chung <code>bolt_J</code> không đại diện cho slide của khẩu này; ảnh từ một góc hip chưa đủ chứng minh toàn bộ trạng thái nhìn thấy đã khớp video.</li>
+<li><strong>Không kéo giãn Inspect của SKS.</strong> Tay dài 14.166667 s, cơ khí dài 13.833333 s. Cả hai lấy mẫu theo giây đã trôi qua; clip ngắn giữ frame cuối, không bị ép về cùng phần trăm tiến độ.</li>
+<li><strong>Đi/chạy dùng lớp chuyển động theo họ súng.</strong> M1911 dùng family Pistol, M4 dùng family AssaultRifle, ghép lên idle của chính khẩu. Carry stance lấy từ điểm cuối Sprint_In và kiểm tra với đầu Sprint_Out; giữ bone camera/root. Đây là phép ghép phục vụ bản học tập, chưa khôi phục toàn graph runtime gốc. <a href="../references.html#local-e149619010c2">Chứng cứ locomotion (workspace)</a>.</li>
+<li><strong>Preset theo âm thanh video.</strong> AK74 khoảng 650 RPM, Vector khoảng 1.200 RPM, M249 khoảng 850 RPM; các nhịp này khác CSV beta. Phân tích dùng chuỗi onset và autocorrelation của các burst. Đây là số làm tròn đo từ video, không phải hằng số gameplay đã giải mã. SKS/M1911/M4 chưa được đổi nhịp theo phép đo này.</li>
+<li><strong>Vector cần hai đầu ngắm thật.</strong> Tắt reflex để lộ rail trống chưa phải bộ iron sight. Nhánh Mutable có <code>Id.Item.MBUSIronSights</code>; hai phần native dùng <code>frontSight_Attach</code> và <code>sight_Attach</code>. Cách đặt được suy từ bind pose. So hình nguồn tại 254,133 s và 263,550 s cho thấy cấu trúc trụ trước, khe ngắm sau và chân gá phù hợp; đây là đối chiếu hình dạng, không phải dữ liệu loadout của người quay.</li>
+</ul>
+<h2 id="showcase-implementation-vi-md-cach-kiem-tra-do-giong">Cách kiểm tra độ giống</h2>
+<p><a href="../references.html#local-fe8cc5d22e16">Mở đối chiếu frame (workspace)</a>. Trang có ảnh nguồn PNG, ảnh render Unreal, bước từng frame, chạy đồng bộ, alpha overlay và offset có thể điều chỉnh. File nguồn là 1920×1080/60 FPS; baseline engine 960×540 lấy mẫu ở 60 Hz. PTS của WebM được giữ lại, không tạo frame nội suy để có vẻ khớp.</p>
+<p>Baseline gồm 6 đoạn: AK74 tactical/empty, Vector tactical/empty, M249 empty và pha mở đầu SKS empty. Tổng 1.416 frame engine. Mốc quan sát có sai số ±2–3 frame; chúng là thời điểm nhìn thấy chuyển động, không phải thời điểm người quay nhấn R. <a href="../references.html#local-4fa76850798f">Mốc và giới hạn phép đo (workspace)</a>.</p>
+<p>Đợt <code>DF484E1044625FF06AE6CDBC55E8A86C</code> bổ sung <strong>1.152 frame</strong>, gồm reload rỗng M1911, M4, GGX-17, Deagle, MP5 và KH2002. <a href="../references.html#local-2e29063967e3">Receipt sáu đoạn mới (workspace)</a> giữ thời gian riêng của tay/cơ khí và yêu cầu gốc của từng case. Điểm bắt đầu lần lượt là 20,033 / 341,834 / 50,100 / 110,267 / 221,017 / 548,217 giây trong video, sai số ±2–3 frame. Toàn bộ chạy ở tốc độ clip 1,0; camera 94° và viewmodel 85° là cấu hình chẩn đoán chưa hiệu chỉnh theo video.</p>
+<p>M4 minh họa vì sao phải phân biệt <strong>thời gian chuyển động nhìn thấy</strong> với <strong>độ dài clip</strong>: video nhìn như đã về tư thế sẵn sàng khoảng 344,934 s (khoảng 3,1 s sau onset), nhưng clip nguồn dài 3,666667 s. Render clip cũng đã gần tư thế hip ở tuổi 3,1 s và còn phần đuôi ổn định. Chênh hai con số này tự nó không chứng minh sai tốc độ; chưa được dùng để kéo nhanh animation hoặc thay reload timer.</p>
+<p>Capture này lấy mẫu trực tiếp animation, giữ camera để kiểm tra pose. Nó không chạy recoil, âm thanh, input hay blend gameplay. Vì vậy, PASS ở receipt chỉ chứng minh capture thực hiện được; không chứng nhận cảm giác bắn hoặc độ khớp hình ảnh 1:1. Kiểm thử gameplay chạy riêng với input, đạn, các hành động và UI.</p>
+<p>Lần kiểm thử gameplay mười khẩu trước đợt sửa gunfeel <code>113C4B814DC8B1B5BD3ED7970E58409A</code> đạt <strong>479/479 kiểm tra</strong>, tạo <strong>82 ảnh</strong>, sau khi áp dụng material M1911/Deagle và bổ sung code camera tùy chọn. Lượt này dùng camera mặc định. Kiểm tra gồm chế độ bắn riêng, chuyển khẩu giữ đạn, trạng thái empty, sprint, ADS, reload và vendor hai trang. Receipt bất biến: <a href="../references.html#local-24db29627f85">runtime-ten-pbr (workspace)</a>. <strong>21/21 kiểm thử quy tắc</strong> đạt trong <a href="../references.html#local-7f02cfd765ab">automation21 (workspace)</a>. Những PASS này xác nhận hành vi được kiểm tra, chưa xác nhận độ giống video.</p>
+<p>Lượt trước PBR <code>DFD352F648ED2CE1570B4A8FD0D868E8</code> cũng đạt 479/479 và được giữ riêng. Hai case reload M1911/Deagle hiện dùng ảnh mới từ <code>611CF533430DD72D9806EE99F1BC3751</code>; <a href="../references.html#local-3e49edf8c1d1">A/B material (workspace)</a> giữ cả 327 ảnh trước và 327 ảnh sau để kiểm tra thay đổi mà không thay camera hay timing.</p>
+<p>Receipt sáu khẩu trước đó <code>4D67D6C54D2801A15E8D8CAB357128A5</code> (288/288, 56 ảnh) được giữ làm lịch sử sau sửa tick, M4 và reload audio. Bản đối chiếu dùng thêm 423 frame Vector từ lần <code>BEF08F2B42C16E45CC3267B751EFD5DB</code> sau khi lắp iron sights; bốn đoạn không thay đổi giữ nguyên receipt baseline. Smoke hai frame xác nhận probe pose giữ đúng thời gian animation sau thay đổi tick. Các lượt này không xác nhận các vũ khí chưa tích hợp.</p>
+<p><strong>Lịch sự kiện gốc không nằm đầy đủ trong clip UEANIM.</strong> <a href="../references.html#local-d07a5afced61">Điều tra montage (workspace)</a> tìm được 155 notify trong 28 montage nguồn, trong khi các sequence đã kiểm tra không mang lịch đó. Với reload rỗng M1911/M4, mỗi export notify có một tag Stage1/2/3 duy nhất; preset Showcase dùng các mốc dưới đây khi thời lượng clip khớp. WAV A/B/C của chính khẩu được ghép theo tên MagOut/MagIn/Chamber: đây là suy luận có chứng cứ, chưa khôi phục routing, random, gain hay mix MetaSound gốc. Những hành động khác giữ lịch Foley nghiên cứu hiện có.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Reload rỗng</th>
+<th align="right">Stage 1</th>
+<th align="right">Stage 2</th>
+<th align="right">Stage 3</th>
+<th align="right">Thời lượng clip nguồn</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>M1911</td>
+<td align="right">0,000000 s</td>
+<td align="right">0,758828 s</td>
+<td align="right">1,388722 s</td>
+<td align="right">2,250000 s</td>
+</tr>
+<tr>
+<td>M4</td>
+<td align="right">0,000000 s</td>
+<td align="right">0,988347 s</td>
+<td align="right">1,913533 s</td>
+<td align="right">3,666667 s</td>
+</tr>
+</tbody></table></div>
+<p>Các mốc dùng thời gian tuyệt đối của action, không ép về 0 / 0,5 / 0,85. Hủy reload dừng sự kiện đang chờ và âm đang phát. Clip khác độ dài, reload tactical và súng khác không tự mượn lịch này. Cấu hình cùng hash/tag/nguồn WAV nằm trong <code>Config/ShowcaseReloadAudio.json</code>, tái tạo bằng <code>Scripts/prepare_showcase_reload_audio_config.py</code>.</p>
+<p>Không lấy thời gian thấy súng về hip để thay reload timer ngay: frame đầu có thể đã ở trong blend, còn SKS trong video được bắn ngắt trước khi clip kết thúc. Cũng không lấy camera trong video làm recoil gốc khi chưa tách được thao tác chuột của người quay.</p>
+<h2 id="showcase-implementation-vi-md-kiem-tra-phat-ban-trong-runtime">Kiểm tra phát bắn trong runtime</h2>
+<p>Lượt live đầu tiên phát hiện <code>WeaponComponent</code> cập nhật phát bắn sau tick trình diễn: đạn và recoil đổi nhưng animation tay/cơ khí còn dùng tuổi phát trước. Bản sửa đặt thứ tự <strong>owner/input → weapon → trình diễn súng → mesh</strong>, đồng thời cập nhật ánh sáng đầu nòng sau phát bắn. Không thay thứ tự tính sprint bằng cách đưa toàn bộ actor ra sau weapon.</p>
+<p>Lượt sau sửa <code>C643CBEB4FB9E2BA016592B601ED9791</code> có 360 frame liên tiếp tại timestep 1/60 s, không thiếu frame: AK74 22 phát, Vector 30 phát rồi hết băng, M249 29 phát trong cửa sổ giữ cò 2 s mỗi khẩu. Cả 81 phát đều có tuổi animation đúng trong cùng frame và ánh sáng đầu nòng hoạt động. Đây là kiểm tra tính đồng bộ của Lab, không phải số đo sai số giữa Lab và video WARDOGS.</p>
+<p><code>Run-RuntimeBurst.ps1</code> ghi input giữ cò thật, recoil, control rotation, clip/action time, số đạn và timestamp engine. <a href="../references.html#local-adc1448c4dc2">Ba video xem nhanh (workspace)</a> được mã hóa từ chính các frame liên tục; không nội suy và <strong>không có âm thanh</strong>. PNG gốc và telemetry vẫn là chứng cứ chính. Trang đối chiếu giữ riêng ba case bắn runtime và sáu case lấy mẫu pose; mốc nguồn là flash nhìn thấy đầu tiên, có sai số ±1 frame, không phải thời điểm nhấn chuột.</p>
+<h2 id="showcase-implementation-vi-md-quy-trinh-co-the-chay-lai">Quy trình có thể chạy lại</h2>
+<ol>
+<li>Nguồn và hash nằm trong <code>WardogsPorting/research/gameplay/bxMd6SvtJi8/</code>. <code>prepare_showcase_weapon_sources.py</code> kiểm tra archive/mapping, xuất primitive và giải quyết base pose; các role thiếu hoặc mơ hồ phải báo lỗi.</li>
+<li>Build native project bằng <code>Run-VideoGameplay.ps1 -Stage Build</code> khi Editor đã đóng.</li>
+<li>Trong commandlet Python của project, chạy theo thứ tự <code>prepare_showcase_weapons.py</code>, <code>prepare_showcase_inspect.py</code>, <code>prepare_showcase_locomotion.py</code>, <code>prepare_showcase_vector_irons.py</code>, <code>prepare_showcase_m4_variant.py</code>, <code>prepare_showcase_icons.py</code>. Các importer kiểm tra SHA, skeleton, số key, thời lượng và mesh trước khi gán profile. Chạy lại importer weapons sẽ gán sprint loop cơ bản; cần chạy lại locomotion sau nó để giữ carry stance. <code>prepare_showcase_reload_audio_config.py</code> chạy bằng Python thường để tái tạo cấu hình mốc âm thanh từ notify đã xuất.</li>
+<li><code>Run-VideoGameplay.ps1 -Stage Test</code> chạy kiểm thử quy tắc. <code>-Stage Capture -ShowcaseReference</code> chạy kiểm thử gameplay và chụp ảnh offscreen.</li>
+<li><code>Run-ShowcaseCapture.ps1 -Config Config/ShowcaseCapture.measured.json</code> lấy mẫu pose cho các mốc đã quan sát. <code>Scripts/publish_showcase_comparison.py</code> đóng gói ảnh và các receipt cho trang đối chiếu.</li>
+</ol>
+<h2 id="showcase-implementation-vi-md-khoang-cach-con-lai">Khoảng cách còn lại</h2>
+<p>Hai cải tiến đã được kiểm riêng sau lượt mở rộng: <a href="../references.html#local-3e49edf8c1d1">PBR cho M1911/Deagle (workspace)</a> dùng texture nguồn để sửa bề mặt trắng phẳng, với 327 frame trước/sau giữ nguyên camera và thời gian; <a href="../references.html#local-9ddadbab9d4b">CameraBone tùy chọn (workspace)</a> đạt 21 kiểm thử quy tắc và sáu case native tắt/bật không đổi ray bắn hoặc transform tay. <code>Play-ShowcaseCameraStudy.cmd</code> cho phép chơi thử camera này. Cả ánh xạ kênh PBR lẫn cách phối CameraBone còn là cách tái tạo được ghi rõ, không phải shader/camera graph gốc đã phục hồi.</p>
+<p>23 bộ súng chưa có vòng gameplay đã kiểm chứng. Toàn bộ recoil/độ tản, chuyển động camera, ADS, sự kiện âm thanh và notify chưa khớp từng frame với video. Áo tay, vật liệu kim loại, ánh sáng và một số biến thể phụ kiện còn khác. Capture baseline đã chỉ ra các lỗi cụ thể này; không dùng số lượng asset hoặc số test PASS để thay cho việc kiểm tra trực quan.</p>
+<p>Với mỗi khẩu còn lại, phải hoàn thành cả chuỗi: xác định cấu hình trong video → rig/mesh đúng → cặp tay/cơ khí đúng → base pose/timing đúng → trạng thái gameplay → âm thanh/feedback → đối chiếu frame. Chỉ xuất thêm mesh hoặc gán chung animation sẽ không đạt mục tiêu này.</p>
+</article></main></body></html>

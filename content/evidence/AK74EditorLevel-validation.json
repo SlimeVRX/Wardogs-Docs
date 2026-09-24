@@ -1,0 +1,129 @@
+{
+  "success": true,
+  "map": "/Game/WardogsLab/VideoGameplay/Maps/L_AK74_HIPTest",
+  "checks": [
+    {
+      "name": "Correct project",
+      "pass": true
+    },
+    {
+      "name": "No showcase command flag supplied",
+      "pass": true
+    },
+    {
+      "name": "Load range map",
+      "pass": true
+    },
+    {
+      "name": "PlayerStart exists",
+      "pass": true
+    },
+    {
+      "name": "Save L_AK74_HIPTest",
+      "pass": true
+    },
+    {
+      "name": "Original range map unchanged on disk",
+      "pass": true
+    },
+    {
+      "name": "Reload saved test level",
+      "pass": true
+    },
+    {
+      "name": "Saved GameMode correct",
+      "pass": true
+    },
+    {
+      "name": "Saved map owns showcase settings",
+      "pass": true
+    },
+    {
+      "name": "Actual editor PIE world",
+      "pass": true
+    },
+    {
+      "name": "Map opt-in survives PIE duplication",
+      "pass": true
+    },
+    {
+      "name": "AK74 selected by default",
+      "pass": true
+    },
+    {
+      "name": "Iron sights selected without command flag",
+      "pass": true
+    },
+    {
+      "name": "Showcase650RPM loaded from map opt-in",
+      "pass": true
+    },
+    {
+      "name": "Loadout UI available",
+      "pass": true
+    },
+    {
+      "name": "Latest HIP animation runtime active",
+      "pass": true
+    },
+    {
+      "name": "Deploy works in PIE",
+      "pass": true
+    },
+    {
+      "name": "Holding trigger produces repeated HIP shots in PIE",
+      "pass": true
+    },
+    {
+      "name": "HIP conserves magazine rounds",
+      "pass": true
+    },
+    {
+      "name": "Reload starts after HIP burst",
+      "pass": true
+    },
+    {
+      "name": "Reload requests its configured source sound",
+      "pass": true
+    },
+    {
+      "name": "AK74 does not borrow unsupported M1911/M4 event schedule",
+      "pass": true
+    },
+    {
+      "name": "Reload refills magazine",
+      "pass": true
+    },
+    {
+      "name": "ADS available in PIE",
+      "pass": true
+    },
+    {
+      "name": "ADS shot fires in PIE",
+      "pass": true
+    },
+    {
+      "name": "ADS shot count advances once",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "scope": "Saved map, real editor PIE without showcase command flag, deployment/HIP/reload/ADS smoke. Not a new frame-parity study.",
+  "file": "WardogsAssetLab\\Content\\WardogsLab\\VideoGameplay\\Maps\\L_AK74_HIPTest.umap",
+  "mapSha256": "1970a4c178255b3b9c4a80ba4711db17df9d619bf73e2024440909532afa1e1a",
+  "sourceMapSha256": "14080bd022bb1db025af151e24811f01dbbaee363cbb559de4683ca285bb188b",
+  "actorCount": 306,
+  "hipConfiguration": {
+    "schema": "WardogsAK74HipFireV1",
+    "sourceAmplitude": 0.45,
+    "retriggerBlendSeconds": 0.06,
+    "rotationScale": 1,
+    "scope": "AK74 HIP-source arms pose only. Measured study calibration: 45% source recoil delta and 60ms outgoing-pose handoff. Original graph is not recovered. Rotation ablation rejected; scale1 is exact pass-through. ADS-started fire, camera, ballistics and mechanical shot clock unchanged. A HIP-started clip retains its calibration during later ADS entry until next shot/end.",
+    "evidence": "WardogsPorting/research/gameplay/bxMd6SvtJi8/ak74-hip-focus-20260924/README.vi.md",
+    "selection": "Native-frame comparison at source anchor416.200s, first61frames, no phase optimization. Amplitude/handoff candidates866A8F96454299EA1007FC98B32F51C9; rejected rotation ablationsB65AA8704498B59EF90F2399D328708F."
+  },
+  "pieWorld": "/Game/WardogsLab/VideoGameplay/Maps/UEDPIE_0_L_AK74_HIPTest.L_AK74_HIPTest",
+  "pawnClass": "/Script/WardogsGameplayLab.WardogsVideoCharacter",
+  "animationClass": "/Script/WardogsGameplayLab.WardogsVideoAnimInstance",
+  "hipShots": 9
+}

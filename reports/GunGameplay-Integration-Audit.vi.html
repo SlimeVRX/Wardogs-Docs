@@ -1,0 +1,210 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="description" content="Báo cáo hiệu chỉnh AK74, nền tảng Gun Gameplay và quy trình tái tạo cảm giác bắn từng khẩu."><title>Kiểm tra tích hợp GunGameplay — 20/09/2026 · Wardogs Docs</title><link rel="stylesheet" href="../assets/styles.css"></head><body><header class="masthead"><div class="brand">WARDOGS DOCS<span>Cẩm nang Gun Gameplay · tiếng Việt · 24.09.2026</span></div><div class="actions"><a href="../index.html">Cẩm nang</a><a href="../references.html">Báo cáo & bằng chứng</a><a href="https://github.com/SlimeVRX/Wardogs-Docs">GitHub ↗</a><button class="print" onclick="window.print()">In / lưu PDF</button></div></header><main class="report-layout"><article class="chapter"><p class="report-date">BÁO CÁO LỊCH SỬ · <a href="../references.html">Về danh mục</a> · <a href="../content/reports/GunGameplay-Integration-Audit.vi.md">Markdown</a></p><aside class="notice">Báo cáo này giữ trạng thái tại thời điểm ghi. Các nhận xét về asset, sound, ADS và thông số có thể đã được sửa ở bước sau. Đọc <a href="../index.html#case-study">lịch sử AK74</a> và <a href="../index.html#start">kết quả hiện tại</a> trước khi sử dụng số liệu.</aside><h1 id="gungameplay-integration-audit-vi-md-title">Kiểm tra tích hợp GunGameplay — 20/09/2026</h1>
+<p>Tài liệu này ghi kết quả đọc source, manifest và trạng thái tiến trình tại thời điểm bắt đầu mở rộng bộ GunGameplay. Nó không phải biên bản nghiệm thu cho các asset sẽ được xuất trong lượt mở rộng. Agent thực hiện kiểm tra không chạy Editor, không thao tác giao diện và không sửa asset có sẵn.</p>
+<h2 id="gungameplay-integration-audit-vi-md-vi-sao-nhin-thay-sung-static-nhung-khong-thay-animation-tren-chinh-sung">Vì sao nhìn thấy súng static nhưng không thấy animation trên chính súng?</h2>
+<p>Bộ <code>GameplaySystems</code> trước đây tách <strong>geometry súng</strong> khỏi <strong>nhân vật cầm súng</strong>. Ba asset <code>SM_AK74_3aa0d31819</code>, <code>SM_Vector_0b1ed539ec</code> và <code>SM_M249_77e3b81dd8</code> là StaticMesh thật theo bản xuất. Chúng không có skeleton để chọn AnimSequence trực tiếp. Animation FPS của tay nằm trên rig nhân vật FP dùng chung; animation TP nằm trên rig nhân vật TP.</p>
+<p>Đây là giới hạn của bộ mẫu trước, không phải bằng chứng rằng game WARDOGS không có cơ cấu súng chuyển động. Muốn tái tạo cơ cấu cần truy tiếp asset vũ khí, bộ phận, rig, clip, curve và assembly dữ liệu nguồn. Không được đổi nhãn một StaticMesh thành “skeletal weapon gốc” để che khoảng trống đó.</p>
+<p>Từ <code>Saved/GameplaySystems/imported-assets.json</code>, hệ <code>03_firstperson_weapon_handling</code> đã có:</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>AK74</th>
+<th>Vector</th>
+<th>M249</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Geometry súng</td>
+<td>StaticMesh</td>
+<td>StaticMesh</td>
+<td>StaticMesh</td>
+</tr>
+<tr>
+<td>Rig tay FP</td>
+<td>Chung <code>SKEL_FP_Character_Refactor</code></td>
+<td>Chung rig FP</td>
+<td>Chung rig FP</td>
+</tr>
+<tr>
+<td>Clip tay FP</td>
+<td>Idle, Walk, Sprint, Aim, Fire, Reload, ReloadEmpty, Equip</td>
+<td>Cùng tám vai trò</td>
+<td>Bảy vai trò, chưa có Equip trong bộ mẫu</td>
+</tr>
+<tr>
+<td>Clip người TP</td>
+<td>Fire, ReloadEmpty</td>
+<td>Fire, Reload</td>
+<td>Fire, Reload</td>
+</tr>
+<tr>
+<td>Cơ cấu riêng magazine/bolt/belt</td>
+<td>Chưa được bộ mẫu cũ chứng minh</td>
+<td>Chưa được bộ mẫu cũ chứng minh</td>
+<td>Chưa được bộ mẫu cũ chứng minh</td>
+</tr>
+</tbody></table></div>
+<p>Tổng cộng <strong>23 clip tay FP và sáu clip TP</strong> đã liên kết trong chỉ mục cũ. Asset tay để xem các clip FP là:</p>
+<p><code>/Game/WardogsLab/GameplaySystems/PreparedMeshes/SK_SK_FP_Arms_Male_NoDeform_dde4680ca9</code></p>
+<p>Đây là bản mesh đã gắn với skeleton nguồn của animation. Mesh nguyên liệu ở <code>Models/SK_FP_Arms_Male_NoDeform_dde4680ca9</code> giữ skeleton do importer mesh sinh ra; dùng bản <code>PreparedMeshes</code> giúp chọn đúng các clip nguồn. Các clip ở <code>Animations</code> có tiền tố <code>fp_ak74_</code>, <code>fp_vector_</code>, <code>fp_m249_</code>; các Idle giữ tên <code>A_FP_*_Idle</code>.</p>
+<h2 id="gungameplay-integration-audit-vi-md-rig-va-attachment-da-co-bang-chung">Rig và attachment đã có bằng chứng</h2>
+<p>Mesh tay nguồn chứa 176 bone. Skeleton FP nguồn dùng cho clip chứa 180 bone. Bốn bone thêm được ghi trong bằng chứng bake là <code>calf_r_annotationLocator</code>, <code>calf_l_annotationLocator</code>, <code>zzzzz1</code>, <code>zzzzz</code>. Chúng không phải bone magazine hay bolt.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Tên</th>
+<th>Bằng chứng nguồn</th>
+<th>Ý nghĩa tích hợp</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>CameraBone</code></td>
+<td>Bone trực tiếp dưới <code>root</code></td>
+<td>Mốc camera của pose FP</td>
+</tr>
+<tr>
+<td><code>CameraSocket</code></td>
+<td>Gắn <code>CameraBone</code>, transform identity</td>
+<td>Mốc căn viewmodel/camera</td>
+</tr>
+<tr>
+<td><code>weapon_r</code></td>
+<td>Bone dưới <code>hand_r</code></td>
+<td>Chuyển động vị trí cầm súng phải</td>
+</tr>
+<tr>
+<td><code>weapon_l</code></td>
+<td>Bone dưới <code>hand_l</code></td>
+<td>Mốc phía tay trái; không tự chứng minh là bone magazine</td>
+</tr>
+<tr>
+<td><code>WeaponPoint</code></td>
+<td>Socket trên <code>weapon_r</code>, yaw 90°, translation 0</td>
+<td>Chỗ gắn geometry súng mà runtime EA đang dùng</td>
+</tr>
+<tr>
+<td><code>attach_Socket</code></td>
+<td>Socket trên <code>hand_r</code>, transform riêng</td>
+<td>Không được thay thế tùy tiện cho WeaponPoint</td>
+</tr>
+</tbody></table></div>
+<p>Một StaticMesh gắn vào <code>WeaponPoint</code> sẽ đi theo toàn bộ tay và pose, nên súng vẫn có thể nâng lên khi ngắm hoặc đổi vị trí khi reload. Nhưng các đỉnh trong StaticMesh không tách chuyển động: băng đạn, bolt và belt vẫn đứng yên tương đối với thân súng.</p>
+<p>Có hai hướng tái tạo cơ cấu cần phân biệt:</p>
+<ol>
+<li><strong>Rig súng nguồn và clip nguồn:</strong> nhập SkeletalMesh với skeleton đúng, dùng đúng animation cơ khí; đây là hướng có bằng chứng mạnh nhất khi asset nguồn đọc được.</li>
+<li><strong>Lắp bộ phận từ mesh nguồn:</strong> thân, magazine, bolt, dây đạn là các component riêng; di chuyển theo transform/curve/notify đã đọc được. Nếu timing hoặc transform phải tự đặt thì phải ghi rõ đó là bản dựng nghiên cứu.</li>
+</ol>
+<p>Chỉ thấy tên bone hoặc tên clip không chứng minh graph assembly và timing gốc. Cũng không được gắn animation tay FP vào một skeleton súng không tương thích.</p>
+<h2 id="gungameplay-integration-audit-vi-md-bo-sung-sau-khi-lan-duoc-rig-va-montage-nguon">Bổ sung sau khi lần được rig và montage nguồn</h2>
+<p>Kết quả xuất nguồn GunGameplay ngày 20/09/2026 đã làm rõ thêm điều bộ mẫu cũ thiếu:</p>
+<ul>
+<li><strong><code>SK_BaseWeapon</code> có 37 bone trong mesh. <code>SKEL_BaseWeapon</code> đầy đủ nguồn có 42 bone trong skeleton.</strong> Hai con số mô tả hai đối tượng khác nhau; không gọi đây là “skeleton nguồn 37 bone”. Số 42 được đọc trực tiếp từ <code>ReferenceSkeleton.FinalRefBoneInfo</code> trong metadata skeleton.</li>
+<li>Đây là rig cơ khí chung với clip cơ khí riêng từng súng. Nó không phải hình dáng AK74/Vector/M249 đã skin hoàn chỉnh. Audit toàn bộ SkeletalMesh có trong catalog chưa tìm thấy SkeletalMesh cầm tay riêng cho ba khẩu này.</li>
+<li>Bộ chọn có <strong>tám StaticMesh: ba hình học toàn khẩu và năm băng đạn rời</strong>. Chưa chứng minh binding từng static part vào bone, skin weight gốc, hay có mesh bolt rời. Không thể chỉ gắn cả khẩu vào một bone rồi tuyên bố đã phục hồi magazine/bolt/belt.</li>
+<li><code>SK_M249_Mounted</code> là mesh có rig của súng gắn giá; nó được nghiên cứu riêng, không dùng làm vật thay thế chưa ghi nhãn cho M249 cầm tay.</li>
+<li>Các montage cơ khí M249 đã decode có hai slot <strong><code>DefaultSlot</code> + <code>Magazine</code></strong>, clip khác nhau cho súng và băng, notify <strong><code>WDLockMutableUpdated</code></strong>, cùng curve <strong><code>FullWeapon</code></strong>. Các dấu vết này củng cố việc hệ nguồn phối hợp animation và lắp ráp Mutable. Chúng chưa phục hồi implementation cập nhật Mutable, skin/binding hay toàn bộ AnimGraph.</li>
+<li>Với clip băng M249 chỉ có skeleton mà chưa có SkeletalMesh tương ứng trong bộ chọn, có thể kiểm track/hierarchy/time nhưng chưa thể đánh giá pose trên geometry băng. Không tính lượt kiểm skeleton thành đã xem cơ cấu magazine hoàn chỉnh.</li>
+</ul>
+<p>Bằng chứng cụ thể:</p>
+<ul>
+<li><code>SourceData/GunGameplay/Files/metadata_a658dbca2f0a_d76199539cc8.json</code>: <code>SKEL_BaseWeapon</code>, 42 phần tử <code>ReferenceSkeleton.FinalRefBoneInfo</code>.</li>
+<li><code>SourceData/GunGameplay/Files/metadata_10942116fbb3_3a37a54c3493.json</code>: montage M249 Empty Drop 200to200, hai slot và các marker nêu trên.</li>
+<li><code>SourceData/GunGameplay/Files/metadata_274ba43eb12d_00109eba994b.json</code>: montage M249 Tactical Drop 200to200.</li>
+<li><code>Saved/GunGameplay/import-plan.json</code>: nguồn của mesh nền, model súng/băng, các clip và metadata đã chọn.</li>
+<li><code>WardogsPorting/research/gun-gameplay/catalog-audit.json</code>: kiểm kê tất cả SkeletalMesh và quan hệ namespace; catalog visibility chưa phải thành công import.</li>
+</ul>
+<p>Các mục này là bằng chứng nguồn đã đọc, không phải biên bản nghiệm thu import đang chạy. Kết quả import cuối phải đọc từ <code>Saved/GunGameplay/validate-report.json</code> và <code>publish-report.json</code>.</p>
+<h2 id="gungameplay-integration-audit-vi-md-runtime-hien-tai-lam-duoc-gi">Runtime hiện tại làm được gì?</h2>
+<p>Các file liên quan:</p>
+<ul>
+<li><code>Source/WardogsGameplayLab/Private/WardogsEACharacter.cpp</code>: <code>RefreshViewmodel()</code> lấy mesh/clip từ <code>WardogsEAViewmodel</code>, gắn cả <code>Rifle</code> và <code>StaticRifle</code> lên <code>FirstPersonMesh</code> tại socket đã chọn.</li>
+<li><code>Source/WardogsGameplayLab/Private/WardogsEAAnimInstance.cpp</code>: trộn Idle/Move, action và Aim; phát Equip/Fire/Reload theo trạng thái gameplay.</li>
+<li><code>Source/WardogsGameplayLab/Public/WardogsEAViewmodel.h</code>: liên kết mesh và tám vai trò clip; có alignment riêng cho camera/súng.</li>
+<li><code>Source/WardogsGameplayLab/Public/WardogsWeaponProfile.h</code>: profile có lựa chọn StaticMesh hoặc SkeletalMesh, riêng <code>WeaponFireAnimation</code>, <code>WeaponReloadAnimation</code>, socket, muzzle, audio và thông số gameplay.</li>
+<li><code>Scripts/prepare_ea_gameplay.py</code>: bộ EA hiện đặt <code>static_mesh=mesh</code>, <code>skeletal_mesh=None</code>; profile là giá trị nghiên cứu, không phải bảng cân bằng gốc đã phục hồi.</li>
+</ul>
+<p>Vì profile có trường skeletal/animation không có nghĩa các trường ấy đã chứa tài nguyên. Bản EA đang dùng geometry static và không có component/timeline cơ khí cho magazine, bolt hoặc belt.</p>
+<p>Âm thanh WARDOGS trong dữ liệu khảo sát gồm <code>SoundWave</code>, <code>MetaSoundSource</code> và <code>WDAudioData</code>. Xuất được các lớp WAV chưa phục hồi graph mix, chọn biến thể, góc nghe và timing gốc. Không gán cho WARDOGS một audio middleware khác chỉ vì pipeline project khác đã dùng nó.</p>
+<p>Nhiều clip nguồn là <code>AAT_LocalSpaceBase</code>. Bộ cũ đã tạo FullPose bằng Idle riêng từng súng khi base bị lược lúc cook. Ví dụ AK74 ReloadEmpty có <code>authoredBaseUnknown=true</code>, <code>studyOverride=true</code>, <code>baseSequence=A_FP_AK74M_Idle</code>, xuất cuối <code>AAT_None</code>. Đây là pose dựng để nghiên cứu, không phải đã khôi phục authored base. Bằng chứng cũng ghi <code>curveCompositionImplemented=false</code>.</p>
+<p>Nhánh Aim hiện giữ pose ngắm cuối của ADS transition và dùng recoil camera/viewmodel khi bắn ADS. Nó chưa chứng minh ADS-fire base hoặc AnimGraph nguồn. Bộ mở rộng cần giữ cả raw source metadata, base/bake provenance và clip cuối để người dùng biết phần nào đã được phục hồi, phần nào là phép dựng lại.</p>
+<h2 id="gungameplay-integration-audit-vi-md-cau-truc-thu-vien-mo-rong-de-nghi">Cấu trúc thư viện mở rộng đề nghị</h2>
+<p>Dùng namespace mới <code>/Game/WardogsLab/GunGameplay</code>. Mỗi súng có một DataAsset chỉ mục riêng, thay vì một danh sách phẳng chứa cả ba súng. <code>WardogsSourceDocument</code> đã có đầy đủ trường để làm việc này mà không cần compile lớp mới.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng dữ liệu"><table>
+<thead>
+<tr>
+<th>Nhóm trong chỉ mục từng súng</th>
+<th>Liên kết cần có</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Nhận diện</td>
+<td>Source path/build, weapon definition và trạng thái đọc metadata</td>
+</tr>
+<tr>
+<td>Nhân vật FP</td>
+<td>Mesh chuẩn bị, skeleton FP, bộ clip của đúng súng</td>
+</tr>
+<tr>
+<td>Cơ cấu súng</td>
+<td>Mesh/skeleton súng nếu đọc được; clips/curve của súng; không trộn với clip tay</td>
+</tr>
+<tr>
+<td>Bộ phận</td>
+<td>Thân, magazine, bolt, sight, suppressor và bộ phận thực sự tìm được</td>
+</tr>
+<tr>
+<td>Hành động</td>
+<td>Idle, ADS vào/ra, Fire, dry fire, tactical/empty reload, equip/unequip, sprint… theo đúng catalog và khả năng xuất</td>
+</tr>
+<tr>
+<td>Phản hồi</td>
+<td>Các lớp tiếng bắn, cơ khí, reload, VFX và metadata nguồn tương ứng</td>
+</tr>
+<tr>
+<td>Gameplay</td>
+<td>Dữ liệu ammo/cadence/recoil/spread/reload/attachment nếu decode được, hoặc giới hạn cụ thể nếu không</td>
+</tr>
+<tr>
+<td>Kiểm chứng</td>
+<td>Loại asset, skeleton tương thích, clip duration/track, source hash, base pose và giới hạn geometry</td>
+</tr>
+</tbody></table></div>
+<p><code>source_json</code> nên có bản đồ vai trò → đường dẫn Unreal và nguồn. <code>related_assets</code> chứa những asset tương ứng có thể mở. <code>limitations</code> nêu rõ phần chưa phục hồi. Không gọi DataAsset chỉ mục này là weapon blueprint thực thi.</p>
+<p>Chỉ mục tổng mới liên kết từng súng và bộ tài nguyên chung. Việc đưa dữ liệu này vào gameplay chạy được là một bước riêng cần kiểm trạng thái đạn, quyền hủy reload, thời điểm đổi magazine, camera, socket và muzzle.</p>
+<h2 id="gungameplay-integration-audit-vi-md-import-bang-lenh-trong-khi-editor-nguoi-dung-dang-mo">Import bằng lệnh trong khi Editor người dùng đang mở</h2>
+<p>Tại thời điểm audit, có <code>UnrealEditor.exe</code> PID <strong>20184</strong>, mở đúng <code>WardogsAssetLab.uproject</code>. Tiến trình chỉ có TCP listener 1985 và UDP 54881/6666. Không có listener MCP 18058; không có endpoint Python remote execution 6766 hoặc cấu hình bật remote execution tìm thấy trong config của project. Log đăng ký toolset là bằng chứng plugin đã nạp, không chứng minh server MCP đã khởi động.</p>
+<p><code>Start-WardogsMCP.ps1</code> được thiết kế từ chối nếu project đã có Editor. Không chạy launcher để tạo Editor thứ hai và không dừng Editor của người dùng. Không thể dùng MCP để sửa chỉ mục cũ qua instance đang mở khi chưa có endpoint hoạt động.</p>
+<p>Có thể import trong project tạm cùng tên, giữ nguyên module và plugin, rồi chuyển <strong>chỉ asset mới</strong> vào namespace mới của project chính:</p>
+<ol>
+<li>Giữ tên file <code>WardogsAssetLab.uproject</code>; sao chép descriptor, module binaries và plugin UEFormat tương thích. Manifest module project và UEFormat hiện cùng BuildId <code>55116800</code>.</li>
+<li>Dùng thư mục Content/Saved/Intermediate riêng; không sao chép hoặc ghi đè Content cũ. Các module đã kiểm không dùng đường dẫn filesystem tuyệt đối để khóa vào project gốc.</li>
+<li>Giữ tên package <code>/Game/WardogsLab/GunGameplay/...</code> giống tên sẽ dùng trong project đích. Các class giữ tên <code>/Script/WardogsAssetLab</code> và <code>/Script/WardogsGameplayLab</code>.</li>
+<li>Tạo package và kiểm tải lại trong commandlet của project tạm. Kiểm dependencies không tham chiếu vào namespace tạm hay asset thiếu.</li>
+<li>Chỉ sao chép package mới chưa tồn tại vào Content đích, đối chiếu hash sau copy. Giữ staged source thật trong project đích để source metadata không trỏ vào thư mục tạm sẽ bị mất.</li>
+<li>Kiểm đọc lại các package mới bằng tiến trình commandlet riêng, không chạy thao tác save rộng trên project chính. Editor đang mở có thể cần chờ AssetRegistry phát hiện file mới hoặc mở lại project sau công việc của người dùng.</li>
+</ol>
+<p>Đây là đánh giá tính khả thi, không thay thế kết quả chạy import. Không sửa file <code>.uasset</code> của <code>DA_03_firstperson_weapon_handling</code> trên đĩa khi người dùng có thể đang mở và chỉnh chính asset đó.</p>
+<h3 id="gungameplay-integration-audit-vi-md-api-importer-va-cac-cho-can-tham-so-hoa">API importer và các chỗ cần tham số hóa</h3>
+<ul>
+<li><code>WardogsImportLibrary.manual_import_mesh</code> và các API animation được bảo vệ trong <code>/Game/WardogsLab/</code>; <code>GunGameplay</code> đã nằm trong vùng cho phép, không cần nới guard native.</li>
+<li><code>manual_import_animation</code> từ chối ghi đè package có sẵn. Script phải kiểm tồn tại trước khi gọi.</li>
+<li><code>manual_import_source_skeleton</code> nhập skeleton nguồn độc lập. <code>prepare_character_mesh</code> đối chiếu tên/parent; không remap theo thứ tự track.</li>
+<li><code>restore_source_timing</code> và <code>inspect_animation</code> kiểm timeline/track. <code>sample_asset_pose</code> đánh giá pose trên component tạm; chỉ có clip/mesh cùng rig mới cho kết quả có nghĩa.</li>
+<li><code>Scripts/import_gameplay_systems.py</code> đang hardcode <code>Saved/GameplaySystems</code>, <code>SourceData/GameplaySystems</code>, tên chỉ mục tổng và guard <code>ROOT == &#39;/Game/WardogsLab/GameplaySystems&#39;</code>. Bộ mới phải dùng state/plan/report khác, không tái sử dụng state của bộ 14 hệ thống.</li>
+<li><code>save_imported_assets()</code> gọi SaveDirtyPackages; chỉ dùng trong project tạm để tránh lưu nhầm thay đổi người dùng ở project chính.</li>
+</ul>
+<h3 id="gungameplay-integration-audit-vi-md-khi-co-mcp-dang-chay-that-trong-tuong-lai">Khi có MCP đang chạy thật trong tương lai</h3>
+<p>API local của Epic đã có <code>AssetTools.load_asset</code>, <code>ObjectTools.get_properties</code>, <code>ObjectTools.set_properties</code>, <code>AssetTools.save_assets</code>. Client của project là <code>Scripts/MCP/unreal_mcp.py</code>; cần discover/describe schema trước khi gọi vì schema được server đăng ký.</p>
+<p>Nếu muốn thêm đường dẫn đến GunGameplay vào DA03 cũ, thao tác trên instance Editor người dùng đang dùng: đọc <code>relatedAssets</code>, <code>sourceJson</code>, <code>limitations</code>; nối một liên kết mới nếu chưa có; giữ mọi giá trị cũ; save đúng một asset rồi đọc lại. Ghi receipt trước/sau. Không ghi lại toàn bộ chỉ mục từ manifest cũ vì người dùng có thể đã sửa nó.</p>
+<p><code>ProgrammaticToolset.execute_tool_script</code> chỉ điều phối tool đã đăng ký; nó không cho chạy tùy ý script <code>import unreal</code> của commandlet. Không coi sự hiện diện của ProgrammaticToolset là cầu nối chạy importer Python tùy ý.</p>
+<h2 id="gungameplay-integration-audit-vi-md-nguon-kiem-chung-cuc-bo">Nguồn kiểm chứng cục bộ</h2>
+<ul>
+<li><code>Saved/GameplaySystems/imported-assets.json</code>, <code>import-plan.json</code>, <code>validate-report.json</code>.</li>
+<li><code>WardogsPorting/Demos/GameplaySystems/bindings.json</code> và bake evidence trong manifest nhập.</li>
+<li>Các source runtime/importer liệt kê ở trên.</li>
+<li><code>Docs/EA-FIRSTPERSON.md</code>, <code>Docs/EA-VALIDATION.md</code>, <code>Docs/INTEGRATION.md</code>, <code>Docs/UE58-MCP.md</code>.</li>
+<li><code>UE_5.8/Engine/Plugins/Experimental/Toolsets/EditorToolset/Content/Python/editor_toolset/toolsets/asset.py</code> và <code>object.py</code>.</li>
+<li><code>UE_5.8/Engine/Plugins/Experimental/PythonScriptPlugin/Source/PythonScriptPlugin/Private/PythonScriptPluginSettings.cpp</code>.</li>
+</ul>
+<p>Không tìm thấy <code>AGENTS.md</code> tại workspace root hoặc trong WardogsAssetLab ở lần kiểm tra này.</p>
+</article></main></body></html>

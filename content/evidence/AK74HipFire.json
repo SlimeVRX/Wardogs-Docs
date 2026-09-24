@@ -1,0 +1,9 @@
+{
+  "schema": "WardogsAK74HipFireV1",
+  "sourceAmplitude": 0.45,
+  "retriggerBlendSeconds": 0.06,
+  "rotationScale": 1,
+  "scope": "AK74 HIP-source arms pose only. Measured study calibration: 45% source recoil delta and 60ms outgoing-pose handoff. Original graph is not recovered. Rotation ablation rejected; scale1 is exact pass-through. ADS-started fire, camera, ballistics and mechanical shot clock unchanged. A HIP-started clip retains its calibration during later ADS entry until next shot/end.",
+  "evidence": "WardogsPorting/research/gameplay/bxMd6SvtJi8/ak74-hip-focus-20260924/README.vi.md",
+  "selection": "Native-frame comparison at source anchor416.200s, first61frames, no phase optimization. Amplitude/handoff candidates866A8F96454299EA1007FC98B32F51C9; rejected rotation ablationsB65AA8704498B59EF90F2399D328708F."
+}

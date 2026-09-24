@@ -1,0 +1,122 @@
+{
+  "schema": "WardogsAK74HipCompletionV1",
+  "success": true,
+  "createdAtUtc": "2026-09-24T01:29:35.9511426Z",
+  "engine": "UE5.8",
+  "build": "Succeeded",
+  "scope": "HIP arms recoil amplitude and repeated-shot pose continuity. ADS-started motion unchanged against accepted baseline. Not a frame-exact clone.",
+  "rulesPassed": 30,
+  "gameplayChecks": 539,
+  "gameplayFailures": 0,
+  "gameplayCaptures": 82,
+  "ak74Frames": 1026,
+  "ak74Cases": 8,
+  "ak74RuntimeChecks": 9006,
+  "cameraAndPngIntegrityChecks": 13668,
+  "comparisonPageChecks": 393,
+  "mainManifest": "Saved/RuntimeBurst/05C648EC48FE6B757AA51DBA378ACAD1/manifest.json",
+  "transitionManifest": "Saved/RuntimeBurst/F110EBE742B161E0E6915882201624D8/manifest.json",
+  "fullMagazineManifest": "Saved/RuntimeBurst/A31777CF4DD58CEE614BBC94A1FFD0D1/manifest.json",
+  "measuredVideoSeconds": 1,
+  "measuredSourceAnchorSeconds": 416.2,
+  "measuredVideoFrames": 61,
+  "audioRecorded": false,
+  "videoParityClaimed": false,
+  "adsRegression": [
+    {
+      "id": "ak74-ads-single",
+      "maxDifferences": {
+        "positionCm": 0,
+        "angleDegrees": 0,
+        "controlDegrees": 0,
+        "clipSeconds": 0
+      }
+    },
+    {
+      "id": "ak74-ads-auto",
+      "maxDifferences": {
+        "positionCm": 0,
+        "angleDegrees": 0,
+        "controlDegrees": 0,
+        "clipSeconds": 0
+      }
+    }
+  ],
+  "hashes": [
+    {
+      "path": "Binaries/Win64/UnrealEditor-WardogsGameplayLab.dll",
+      "sha256": "7BD43D25CF42F6D5C50538FA40470468B7C3350395B140958DED6B0E795735E9",
+      "bytes": 2299904
+    },
+    {
+      "path": "Config/AK74HipFire.json",
+      "sha256": "0A99E1A2F0BDDC9808537CB45A904E43EA174C0A484773AF8EC9151D3E11FADD",
+      "bytes": 833
+    },
+    {
+      "path": "Config/AK74RecoilFit.json",
+      "sha256": "2545AFC152B40C7D09D23A9AB009587DB555B6F1C226E36CBEC02E1C6FB8EF6F",
+      "bytes": 9242
+    },
+    {
+      "path": "Source/WardogsGameplayLab/Private/WardogsVideoGameplay.cpp",
+      "sha256": "03CE1C3A8B23776F6CCDC6575317B503CA104B1E3917872311D14FDA781E0487",
+      "bytes": 54436
+    },
+    {
+      "path": "Source/WardogsGameplayLab/Private/WardogsGunStudyAnimInstance.cpp",
+      "sha256": "4213D1BA8F2705A3B031C1C94B92D119137ABB77F16C44E21D4BFE180CB0E00C",
+      "bytes": 7281
+    },
+    {
+      "path": "Source/WardogsGameplayLab/Public/WardogsAK74HipFire.h",
+      "sha256": "018C8223E4B6A5D0A374C799B2F91A505A186C09E4C9F42FC94DB03B7063F713",
+      "bytes": 2626
+    },
+    {
+      "path": "Source/WardogsGameplayLab/Private/WardogsHipRotationNode.cpp",
+      "sha256": "D38A511C9775BAF2264D22041805ABB0C1D804E4434826D54562DDB59F0A4420",
+      "bytes": 4903
+    },
+    {
+      "path": "Source/WardogsGameplayLab/Private/WardogsRuntimeBurstProbe.cpp",
+      "sha256": "D4C315DEB06ADD774E9365E8C5D934C4F7FB2B5FD11ECFB667E058C797A40106",
+      "bytes": 36691
+    },
+    {
+      "path": "Scripts/validate_ak74_hip_runtime.py",
+      "sha256": "BAC74ECF2E25F377147ED586DBFF914DB92257A3F7C8E86F77AE89E11BD32701",
+      "bytes": 8343
+    },
+    {
+      "path": "Saved/AK74HipFocus/runtime-validation.json",
+      "sha256": "302C2A63557221438A8618B8734AC5FEB9AC39CF5FA2832FF57756C688BA1B39",
+      "bytes": 4157
+    },
+    {
+      "path": "Saved/AK74HipFocus/focus-runtime-validation.json",
+      "sha256": "C1929417EF8EC59B31F702AB03EC109E09AF840BEABEA68F78C158C486FDB16D",
+      "bytes": 146075
+    },
+    {
+      "path": "Saved/AK74HipFocus/runtime-gameplay.json",
+      "sha256": "331297C0CD74144264AD6F2B6E282DACDECBCA7DD984271145DABC38169C1FB2",
+      "bytes": 52841
+    },
+    {
+      "path": "Saved/AK74HipFocus/automation-index.json",
+      "sha256": "2EAF9D64E0144578AFCC11B7F8035D6117DD937FC504DF77FFD2B1458D11FB67",
+      "bytes": 12502
+    },
+    {
+      "path": "Docs/AK74-HIP-FrameComparison.html",
+      "sha256": "92B0DD7ACF06B5330F8AB3C1D1928F72179750C9A8071D61F7D94518591B7712",
+      "bytes": 386206
+    },
+    {
+      "path": "Docs/AK74-HIP-FrameComparison.behavior.json",
+      "sha256": "E489A28C786ED682C725A15B5D3B9966F9D7E1837CD3A369D1EDAB1FF4703E6A",
+      "bytes": 599
+    }
+  ]
+}
