@@ -2,6 +2,8 @@
 
 Đọc online: **https://slimevrx.github.io/Wardogs-Docs/**
 
+Nút **Nền tối** ở đầu trang bật/tắt night mode và lưu lựa chọn trong trình duyệt. Khi chưa chọn, website dùng giao diện sáng/tối của hệ điều hành. Chế độ in giữ nền sáng.
+
 Cẩm nang tiếng Việt về Gun Gameplay, dựa trên quá trình hiệu chỉnh AK74 trong WardogsAssetLab:
 
 - Lịch sử từ lỗi ghép pose ADS và rung HIP tới bản đã được chơi thử chấp nhận.

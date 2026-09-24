@@ -1,0 +1,38 @@
+/* Kept separate from the imported lab styles so documentation sync preserves it. */
+.theme-toggle {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 13px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.theme-toggle[aria-pressed="true"] { background: var(--soft); border-color: var(--green); }
+.theme-toggle span { margin-right: 5px; }
+.actions { flex-wrap: wrap; justify-content: flex-end; }
+@media (max-width: 720px) { .actions { justify-content: flex-start; } }
+@media screen {
+  :root { color-scheme: light; }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper: #18231f;
+    --bg: #101713;
+    --ink: #e1e9df;
+    --muted: #adc0b2;
+    --line: #344c40;
+    --green: #a2ddbd;
+    --soft: #223c2d;
+    --orange: #f4b28b;
+  }
+  [data-theme="dark"] code { background: #293d30; }
+  [data-theme="dark"] pre { background: #0e1b15; color: #e1e9df; }
+  [data-theme="dark"] pre code { background: none; }
+  [data-theme="dark"] blockquote { background: #2d2b20; }
+  [data-theme="dark"] tr:nth-child(even) td { background: #1c2c22; }
+  [data-theme="dark"] .notice { background: #342f20; border-left-color: #dab46c; }
+  [data-theme="dark"] .skip { background: var(--paper); }
+  [data-theme="dark"] ::selection { background: #416b52; color: #fff; }
+}
+@media print { :root { color-scheme: light; } }
