@@ -17,22 +17,26 @@
   :root { color-scheme: light; }
   :root[data-theme="dark"] {
     color-scheme: dark;
-    --paper: #18231f;
-    --bg: #101713;
-    --ink: #e1e9df;
-    --muted: #adc0b2;
-    --line: #344c40;
-    --green: #a2ddbd;
-    --soft: #223c2d;
-    --orange: #f4b28b;
+    --paper: #212121;
+    --bg: #181818;
+    --ink: #ececec;
+    --muted: #b4b4b4;
+    --line: #383838;
+    --green: #82aaff;
+    --soft: #2a2a2a;
+    --orange: #d0d0d0;
   }
-  [data-theme="dark"] code { background: #293d30; }
-  [data-theme="dark"] pre { background: #0e1b15; color: #e1e9df; }
+  [data-theme="dark"] code { background: #2c2c2c; }
+  [data-theme="dark"] pre { background: #171717; color: #ececec; }
   [data-theme="dark"] pre code { background: none; }
-  [data-theme="dark"] blockquote { background: #2d2b20; }
-  [data-theme="dark"] tr:nth-child(even) td { background: #1c2c22; }
-  [data-theme="dark"] .notice { background: #342f20; border-left-color: #dab46c; }
+  [data-theme="dark"] blockquote { background: #292929; }
+  [data-theme="dark"] tr:nth-child(even) td { background: #252525; }
+  [data-theme="dark"] .notice { background: #292929; border-left-color: #757575; }
+  [data-theme="dark"] .chapter { box-shadow: none; }
+  [data-theme="dark"] .chapter-link { color: var(--ink); }
+  [data-theme="dark"] .theme-toggle[aria-pressed="true"] { border-color: #757575; }
+  [data-theme="dark"] :is(a, button, summary, .table-wrap):focus-visible { outline-color: #82aaff; }
   [data-theme="dark"] .skip { background: var(--paper); }
-  [data-theme="dark"] ::selection { background: #416b52; color: #fff; }
+  [data-theme="dark"] ::selection { background: #26476b; color: #fff; }
 }
 @media print { :root { color-scheme: light; } }

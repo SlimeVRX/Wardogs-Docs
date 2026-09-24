@@ -1,8 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
 import {Marked} from '../vendor/marked.esm.js';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const themeVersion=createHash('sha256').update(fs.readFileSync(path.join(root,'assets/theme.css'))).digest('hex').slice(0,12);
 const catalog=JSON.parse(fs.readFileSync(path.join(root,'content/catalog.json'),'utf8'));
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const slug=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
@@ -30,7 +32,7 @@ function render(e){
  return{...e,html,headings};
 }
 const header=prefix=>`<header class="masthead"><div class="brand">WARDOGS DOCS<span>Cẩm nang Gun Gameplay · tiếng Việt · 24.09.2026</span></div><div class="actions"><a href="${prefix}index.html">Cẩm nang</a><a href="${prefix}references.html">Báo cáo & bằng chứng</a><a href="https://github.com/SlimeVRX/Wardogs-Docs">GitHub ↗</a><button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false"><span aria-hidden="true">☾</span>Nền tối</button><button class="print" onclick="window.print()">In / lưu PDF</button></div></header>`;
-function page(title,body,prefix='',script=''){return`<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><script src="${prefix}assets/theme.js"></script><meta name="description" content="Báo cáo hiệu chỉnh AK74, nền tảng Gun Gameplay và quy trình tái tạo cảm giác bắn từng khẩu."><title>${escape(title)} · Wardogs Docs</title><link rel="stylesheet" href="${prefix}assets/styles.css"><link rel="stylesheet" href="${prefix}assets/theme.css"></head><body>${header(prefix)}${body}${script}</body></html>`;}
+function page(title,body,prefix='',script=''){return`<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><script src="${prefix}assets/theme.js"></script><meta name="description" content="Báo cáo hiệu chỉnh AK74, nền tảng Gun Gameplay và quy trình tái tạo cảm giác bắn từng khẩu."><title>${escape(title)} · Wardogs Docs</title><link rel="stylesheet" href="${prefix}assets/styles.css"><link rel="stylesheet" href="${prefix}assets/theme.css?v=${themeVersion}"></head><body>${header(prefix)}${body}${script}</body></html>`;}
 const chapters=catalog.entries.filter(e=>e.kind==='chapter').map(render);
 const nav=chapters.map((c,i)=>`<div class="nav-group"><a class="chapter-link" href="#${c.id}"><span class="number">0${i}</span><span>${escape(c.title)}<small>${escape(c.description)}</small></span></a><details><summary>Chủ đề trong chương</summary><ul>${c.headings.map(h=>`<li><a href="#${h.id}">${h.label}</a></li>`).join('')}</ul></details></div>`).join('');
 const articles=chapters.map((c,i)=>`<article class="chapter" id="${c.id}" aria-labelledby="${c.id}-title"><div class="chapter-kicker">CHƯƠNG 0${i} <span>·</span> <a href="${c.file}">Bản Markdown ↗</a></div>${c.html}${i<chapters.length-1?`<a class="next-chapter" href="#${chapters[i+1].id}">Đọc tiếp: ${escape(chapters[i+1].title)} <span>→</span></a>`:'<a class="next-chapter" href="#start">Về đầu cẩm nang ↑</a>'}</article>`).join('');
